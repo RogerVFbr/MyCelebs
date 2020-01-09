@@ -1,0 +1,218 @@
+service: facial-recog-auth
+
+provider:
+  name: aws
+  runtime: python3.7
+  versionFunctions: false
+  tracing:
+    lambda: true
+  apiKeys:
+    - client:
+      - ${self:provider.stage}-client
+      - name: fellow
+        value: IcS2VkzfLc9TQtJO2md8T8T7WZQvIOhz73Cm4brT
+    - dev:
+      - dev-main2
+      - name: dev-faceauth
+        value: ijj6N9ICO31VkEW9w1LKra5NltNSujEUa9S57NIz
+  usagePlan:
+    -  client:
+        quota:
+          limit: 50000
+          offset: 2
+          period: MONTH
+        throttle:
+          burstLimit: 1000
+          rateLimit: 500
+    - dev:
+        quota:
+          limit: 500000
+          offset: 1
+          period: MONTH
+        throttle:
+          burstLimit: 2000
+          rateLimit: 1000
+  environment:
+    BASE_NAME: ${self:service}-${self:provider.stage}
+    GLOBAL_COLLECTIONS_NAME: ${self:provider.environment.BASE_NAME}-global
+    BUCKET_NAME: ${self:provider.environment.BASE_NAME}-images-repo
+    FRONT_BUCKET_NAME: ${self:provider.environment.BASE_NAME}-front-images-repo
+    REGISTER_TABLE_NAME: ${self:provider.environment.BASE_NAME}-register-data
+    ACTIVE_REGISTER_TABLE_NAME: ${self:provider.environment.BASE_NAME}-register-active
+    RECKON_TABLE_NAME: ${self:provider.environment.BASE_NAME}-reckon-data
+    FAILED_RECKON_TABLE_NAME: ${self:provider.environment.BASE_NAME}-failed-reckon-data
+
+#  stage: dev
+#  stage: proto01-01
+  stage: fellow-01-01
+
+  region: us-east-1
+  memorySize: 1024
+  timeout: 20
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "rekognition:*"
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:*"
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "apigateway:*"
+      Resource: "*"
+
+functions:
+  register:
+    handler: Register/Register.register
+    layers:
+      - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:7
+    events:
+      - http:
+          path: register
+          method: POST
+          private: true
+          cors: true
+#    provisionedConcurrency: 2
+
+  reckon:
+    handler: Reckon/Reckon.reckon
+    layers:
+      - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:7
+    events:
+      - http:
+          path: reckon
+          method: POST
+          private: true
+          cors: true
+#    provisionedConcurrency: 2
+
+  delete:
+    handler: Delete/Delete.delete
+    layers:
+      - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:7
+    events:
+      - http:
+          path: delete
+          method: POST
+          private: true
+          cors: true
+
+  admin:
+    handler: Admin/Admin.admin
+    layers:
+      - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-simplejson:1
+    events:
+      - http:
+          path: admin
+          method: POST
+          private: true
+          cors: true
+#    provisionedConcurrency: 2
+
+
+resources:
+  Resources:
+
+    CognifyProtoBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.BUCKET_NAME}
+
+    FrontBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.FRONT_BUCKET_NAME}
+        AccessControl: PublicRead
+
+    BucketPolicy:
+      Type: 'AWS::S3::BucketPolicy'
+      Properties:
+        PolicyDocument:
+          Statement:
+            - Sid: PublicReadForGetBucketObjects
+              Effect: Allow
+              Principal: '*'
+              Action:
+                - 's3:GetObject'
+              Resource: arn:aws:s3:::${self:provider.environment.FRONT_BUCKET_NAME}/*
+        Bucket:
+          Ref: FrontBucket
+
+    registerTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.REGISTER_TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: time
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: time
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+    activeRegisterTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.ACTIVE_REGISTER_TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: time
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: time
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+    reckonTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.RECKON_TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: time
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: time
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
+    failedReckonTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.FAILED_RECKON_TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: time
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: time
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+

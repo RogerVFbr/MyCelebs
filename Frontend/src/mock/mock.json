@@ -1,0 +1,58 @@
+{
+  "contacts": {
+    "a1": {
+      "name": "Romário Seixas",
+      "address": "R. Humberto de Campos, 761 - Leblon - 22430-190",
+      "city": "Rio de Janeiro",
+      "state": "RJ",
+      "latitude": -22.9821685,
+      "longitude": -43.2245055,
+      "weather": ""
+    },
+    "a2": {
+      "name": "Arthur Diamante",
+      "address": "Rua do Russel, 110 - Glória - 22210-010",
+      "city": "Rio de Janeiro",
+      "state": "RJ",
+      "latitude": -22.920555,
+      "longitude": -43.1769206,
+      "weather": ""
+    },
+    "a3": {
+      "name": "Silvio Arouxe",
+      "address": "R. Martagão Gesteira, 92 - São Conrado - 22610-160",
+      "city": "Rio de Janeiro",
+      "state": "RJ",
+      "latitude": -22.9985285,
+      "longitude": -43.2733294,
+      "weather": ""
+    },
+    "a4": {
+      "name": "Adolfo Varginhas",
+      "address": "R. Argentina, 251 - Jardim America - 01436-010",
+      "city": "São Paulo",
+      "state": "SP",
+      "latitude": -23.5698715,
+      "longitude": -46.669946,
+      "weather": ""
+    },
+    "a5": {
+      "name": "Anderson Figueiroa",
+      "address": "R. Pte. Nova, 680 - Colégio Batista - 31110-150",
+      "city": "Belo Horizonte",
+      "state": "BH",
+      "latitude": -19.9091659,
+      "longitude": -43.9362431,
+      "weather": ""
+    },
+    "a6": {
+      "name": "Rosália Silva",
+      "address": "R. dos Coelhos, 355 - Coelhos - 50060-570",
+      "city": "Recife",
+      "state": "PE",
+      "latitude": -8.0666175,
+      "longitude": -34.891629,
+      "weather": ""
+    }
+  }
+}
