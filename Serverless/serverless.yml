@@ -50,7 +50,7 @@ functions:
   addPicture:
     handler: AddPicture/AddPicture.add_picture
     layers:
-      - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:7
+      - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:8
     events:
       - http:
           path: add_picture
