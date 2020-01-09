@@ -1,7 +1,7 @@
-# ev-desafio
+# MyCelebs
 
 
-Desafio técnico para a empresa E.V. Requisitos atendidos:
+This web application's intention is to provide a proof of concept on the usage of multiple AWS services as well as the Serverless architecture concept and VueJS front end usage.
 
 ### Relativo às observações
 * O projeto está todo contido na branch master.
