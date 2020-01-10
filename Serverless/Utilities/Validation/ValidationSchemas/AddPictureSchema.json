@@ -1,0 +1,20 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "Add Picture Schema",
+  "required": ["img_name", "img_desc", "image"],
+  "properties": {
+    "img_name": {
+      "type": "string",
+      "default": "N.A."
+    },
+    "img_desc": {
+      "type": "string",
+      "default": "N.A."
+    },
+    "image": {
+      "type": "string"
+    }
+  }
+}

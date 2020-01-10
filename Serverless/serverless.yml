@@ -8,9 +8,9 @@ provider:
     lambda: true
   apiKeys:
     - dev:
-      - dev-my-celebs
-      - name: dev-my-celebs
-        value: dkk6N0ICO31VkEW9w1LCrb5NltNSujEUa9S64HTw
+      - dev-my-celebs2
+#      - name: dev-my-celebs2
+#        value: dkk6N0ICO31VkEW9w1LCrb5NltNSujEUa9S64HTr
   usagePlan:
     - dev:
         quota:
@@ -48,7 +48,7 @@ provider:
 
 functions:
   addPicture:
-    handler: AddPicture/AddPicture.add_picture
+    handler: Endpoint_AddPicture/AddPicture.add_picture
     layers:
       - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:8
     events:
@@ -57,6 +57,9 @@ functions:
           method: POST
           private: true
           cors: true
+          request:
+            schema:
+              application/json: ${file(Utilities/Validation/ValidationSchemas/AddPictureSchema.json)}
 
 resources:
   Resources:

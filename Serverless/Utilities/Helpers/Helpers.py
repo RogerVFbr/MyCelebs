@@ -7,28 +7,27 @@ class Helpers:
 
     @classmethod
     def get_request_time_id(cls):
-        return datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f") \
-        .replace(' ', '-').replace(':', '-').replace('.', '-')
+        return datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
 
     @classmethod
-    def get_return_object(cls, endpoint, status_code, op_status, response_code, message, img_meta_data,
-                          api_metrics, request_id='N.A.', img_url='N.A.', payload=[]):
-        # Montagem do objeto de retorno
+    def get_return_object(cls,
+                          status_code: int = 200,
+                          response_code: int = 0,
+                          msg_dev: str = 'N.A.',
+                          msg_user: str = 'N.A.',
+                          img_meta_data: dict = {},
+                          api_metrics: dict = {}):
         headers = {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Credentials': True,
         }
 
         body = {
-            "endpoint": endpoint,
-            "op_status": op_status,
-            "response_code": response_code,
-            "message": message,
-            "img_meta_data": img_meta_data,
-            "api_metrics": api_metrics,
-            "request_id": request_id,
-            "img_url": img_url,
-            "payload": payload
+            'response_code': response_code,
+            'msg_dev': msg_dev,
+            'msg_user': msg_user,
+            'img_meta_data': img_meta_data,
+            'api_metrics': api_metrics
         }
 
         return_object = {

@@ -1,6 +1,4 @@
-import io
-
-from lib.Helpers.Helpers import Helpers as hl
+from Utilities.Helpers.Helpers import Helpers as hl
 from PIL.ExifTags import TAGS, GPSTAGS
 
 class ExifUtilities:
@@ -67,33 +65,3 @@ class ExifUtilities:
         s = float(s0) / float(s1)
 
         return d + (m / 60.0) + (s / 3600.0)
-
-    @classmethod
-    def rotate_image_if_needed(cls, image, exif_data, img_bytes):
-        if isinstance(exif_data, dict) and 'Orientation' in exif_data:
-            rotation = 0
-            if exif_data['Orientation'] == 1 or exif_data['Orientation'] == 2:
-                return image, img_bytes
-            elif exif_data['Orientation'] == 3 or exif_data['Orientation'] == 4:
-                rotation = 180
-            elif exif_data['Orientation'] == 5 or exif_data['Orientation'] == 6:
-                rotation = 270
-            elif exif_data['Orientation'] == 7 or exif_data['Orientation'] == 8:
-                rotation = 90
-            image_format = str(image.format)
-            exif = image.info['exif']
-            new_image = image.rotate(rotation, expand=1)
-            print(f"VL - Image orientation mismatch type {exif_data['Orientation']} detected. "
-                  f"Rotating image by {rotation} degrees counter-clockwise to compensate.")
-            try:
-                byteIO = io.BytesIO()
-                # new_image.save(byteIO, format=image_format, exif=exif)
-                new_image.save(byteIO, format=image_format)
-                img_bytes = byteIO.getvalue()
-                print('VL - Successfully updated image bytes with newly rotated image.')
-                return new_image, img_bytes
-
-            except Exception as e:
-                print('VL - Could not update image bytes with newly rotated image: ' + str(e))
-
-        return image, img_bytes

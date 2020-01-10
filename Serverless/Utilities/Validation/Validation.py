@@ -1,175 +1,181 @@
-import os, time, boto3
-from lib.Helpers.Helpers import Helpers as hl
-from lib.Validation.ValidationManager import ValidationManager as vm
-from lib.Resources.Resources_strings_en import Strings as rsc
-from lib.Resources.EnvironmentVariables import EnvironmentVariables as ev
+import io, base64
+from PIL import Image
+
+from Utilities.Helpers.Helpers import Helpers as hl
+from Utilities.Helpers.ExifUtilities import ExifUtilities as eu
+from Resources.Resources_strings_en import Strings as rsc
+from Utilities.Helpers.ApiMetrics import ApiMetrics
 
 
 class Validation:
 
-    def __init__(self):
-        self.validation_status = False
-        self.id = ''
-        self.img_meta_data = {}
-        self.img_bytes = ''
-        self.reason = 'N.A.'
-        self.detect_faces_response = {}
-        self.identity = {}
-        self.identity['coordinates'] = {
-            'source': 'N.A.',
-            'lat': 'N.A.',
-            'lng': 'N.A.'
+    def __init__(self, event, metrics: ApiMetrics):
+        """
+        Constructor of the Validation object, responsible for treating and exposing data retrieved from the
+        request object.
+        :param event: AWS event object
+        :param metrics: ApiMetrics object, responsible for performance measuring.
+        """
+
+        self.event = event                # :dict: AWS Event object.
+        self.img_name = 'N.A.'            # :str: User provided name.
+        self.img_desc = 'N.A.'            # :str: User provided image description.
+        self.img_base64 = None            # :str: BASE64 encoded string, containing image in original payload form.
+        self.img_bytes = None             # :bytes Image in bytes form, product of base64.b64decode()
+        self.img_bytesIO = None           # :bytesIO: Image in bytesIO form, to produce a Pillow Image
+        self.img_pillow = None            # :Image: Pillow Image object (rotation, exif)
+        self.img_meta_data = {
+            'type': 'N.A.',               # :str: Image type (JPG, PNG) 
+            'size': 'N.A.',               # :str: Image size in KB
+            'height': 'N.A.',             # :int: Image height in pixels
+            'width': 'N.A.',              # :int: Image width in pixels (ind)
+            'exif': 'N.A.'                # :dict: or :str: Dictionary containing exif information if available
         }
-        self.identity['device'] = 'N.A.'
-        self.failed_return_object = {}
-        self.image = None
-        self.api_metrics = {
-            'validation_time_json': 'N.A.',
-            'validation_time_char': 'N.A.',
-            'business_logic_time': 'N.A.'
-        }
 
+        self.validation_status = False    # :bool: Flag to expose validation status failed or successful.
+        self.failed_return_object = {}    # :dict: Exposes fail return object in case of failure
+        self.api_metrics = metrics        # :ApiMetrics: Stores metrics object responsible time measurements.
+        
+        self.__validate_request_object()  # Initiate validation process
 
-    def validate_request_object(self, endpoint_name, body, request_fields, request_context, id_must_be_unique,
-                                check_image=True):
+    def __validate_request_object(self):
+        """
+        Validates, decodes and extracts information from request object.
+        :param event: Request object.
+        :return: void.
+        """
 
-        # Validacao de existência dos campos do JSON enviado
-        validation_time_json = time.time()
-        if not vm.validate_input_fields(body, request_fields):
-            self.api_metrics['validation_time_json'] = round(time.time() - validation_time_json, 3)
+        # Start validation time counter.
+        self.api_metrics.start_time('Validation')
+
+        # Extract information from request object.
+        if not self.__extract_info_from_body():
             self.failed_return_object = hl.get_return_object(
-                endpoint=endpoint_name,
                 status_code=400,
-                op_status=rsc.OP_STATUS_FAILED,
                 response_code=0,
-                message=rsc.ERROR_MSG_JSON_STRUCTURE_INVALID,
+                msg_dev='Invalid JSON content.',
+                msg_user='Unable to work with given information.',
                 img_meta_data=self.img_meta_data,
-                api_metrics=self.api_metrics
+                api_metrics=self.api_metrics.get()
             )
             print(rsc.VALIDATION_MSG_REQUEST_INPUT_FIELDS_FAILED)
             return
 
-        # Extrair e organizar as informações recebidas
-        self.__extract_info_from_body(request_context, body)
-
-        # Validacao de Id unico
-        if id_must_be_unique != vm.validate_unique_id(self.id):
-            self.api_metrics['validation_time_json'] = round(time.time() - validation_time_json, 3)
-            message = rsc.ERROR_MSG_TAKEN_ID.format(self.id.replace(ev.BASE_NAME+'-', '')) \
-                if id_must_be_unique else rsc.ERROR_MSG_UNKNOWN_ID.format(self.id.replace(ev.BASE_NAME+'-', ''))
+        # Decode BASE64 to desired formats.
+        if not self.__decode_base64_image():
             self.failed_return_object = hl.get_return_object(
-                endpoint=endpoint_name,
                 status_code=400,
-                op_status=rsc.OP_STATUS_FAILED,
                 response_code=0,
-                message=message,
+                msg_dev='Invalid BASE64.',
+                msg_user='Unable to decode sent file.',
                 img_meta_data=self.img_meta_data,
-                api_metrics=self.api_metrics
-            )
-            print(rsc.VALIDATION_MSG_ID_UNIQUENESS_FAILED)
-            return
-
-        # Caso somente checagem de campos seja necessaria, interromper e retornar sucesso
-        if not check_image:
-            self.validation_status = True
-            self.api_metrics['validation_time_json'] = round(time.time() - validation_time_json, 3)
-            print(rsc.VALIDATION_MSG_SUCCESS)
-            return
-
-        # Validacao preliminar de integridade do BASE64
-        integrity_status, self.img_meta_data, self.img_bytes, integrity_msg = vm.validate_base64_integrity(self.image)
-        if not integrity_status:
-            self.api_metrics['validation_time_json'] = round(time.time() - validation_time_json, 3)
-            self.failed_return_object = hl.get_return_object(
-                endpoint=endpoint_name,
-                status_code=400,
-                op_status=rsc.OP_STATUS_FAILED,
-                response_code=0,
-                message=integrity_msg,
-                img_meta_data=self.img_meta_data,
-                api_metrics=self.api_metrics
+                api_metrics=self.api_metrics.get()
             )
             print(rsc.VALIDATION_MSG_BASE64_INTEGRITY_FAILED)
             return
 
-        self.__complement_missing_info_using_exif(self.img_meta_data['exif'])
-        self.api_metrics['validation_time_json'] = round(time.time() - validation_time_json, 3)
-        validation_time_char = time.time()
+        # Extract EXIF data if available.
+        self.img_meta_data['exif'] = eu.get_exif_data(self.img_pillow)
 
-        # Validacao das caracteristicas da imagem enviada
-        characteristics_status, self.detect_faces_response, characteristics_msg = vm.validate_photo_characteristics(self.img_bytes)
-        if not characteristics_status:
-            self.api_metrics['validation_time_char'] = round(time.time() - validation_time_char, 3)
-            self.failed_return_object = hl.get_return_object(
-                endpoint=endpoint_name,
-                status_code=400,
-                op_status=rsc.OP_STATUS_FAILED,
-                response_code=0,
-                message=characteristics_msg,
-                img_meta_data=self.img_meta_data,
-                api_metrics=self.api_metrics
-            )
-            print(rsc.VALIDATION_MSG_IMAGE_CHARATERISTICS_FAILED)
-            return
+        # Correct EXIF orientation if possible/needed.
+        exif = self.img_meta_data['exif']
+        if isinstance(exif, dict) and 'Orientation' in exif and isinstance(exif['Orientation'], int):
+            self.__rotate_image_if_needed(exif['Orientation'])
 
-        self.api_metrics['validation_time_char'] = round(time.time() - validation_time_char, 3)
+        # Stop validation time counter.
+        self.api_metrics.stop_time('Validation')
+
+        # Flag and log validation status as successful (true).
         self.validation_status = True
         print(rsc.VALIDATION_MSG_SUCCESS)
+
+        # Finish validation execution.
         return
 
-    def __extract_info_from_body(self, request_context, body):
+    def __extract_info_from_body(self):
+        """
+        Double checks request object's fields and content existence and copies values to instance variables.
+        :return: boolean.
+        """
 
-        if 'identity' in request_context:
-            request_identity_full = request_context['identity']
-            if 'sourceIp' in request_identity_full:
-                self.identity['sourceIp'] = request_identity_full['sourceIp']
-            if 'userAgent' in request_identity_full:
-                self.identity['userAgent'] = request_identity_full['userAgent']
-            if 'apiKeyId' in request_identity_full:
-                self.identity['apiKeyProfileName'] = boto3.client('apigateway').get_api_key(
-                    apiKey=request_identity_full['apiKeyId'],
-                    includeValue=False)['name']
-            request_context.pop('identity', None)
+        # Attempts to extract information from newly acquired request object.
+        event = self.event
+        img_name = event.get('img_name')
+        img_desc = event.get('img_desc')
+        img_base64 = event.get('image')
 
-        if 'coordinates' in body and isinstance(body['coordinates'], dict):
-            lat_availability = 'lat' in body['coordinates'] and body['coordinates']['lat'] != ''
-            lng_availability = 'lng' in body['coordinates'] and body['coordinates']['lng'] != ''
-            if lat_availability and lng_availability:
-                self.identity['coordinates']['lat'] = body['coordinates']['lat']
-                self.identity['coordinates']['lng'] = body['coordinates']['lng']
-                self.identity['coordinates']['source'] = 'device'
+        # If successful, assigns values to instance variables.
+        if isinstance(img_name, str) and img_name.strip(): self.img_name = img_name.strip()
+        if isinstance(img_desc, str) and img_desc.strip(): self.img_desc = img_desc.strip()
 
-        if 'device' in body and body['device'] != '':
-            self.identity['device'] = body['device']
+        # Checks for existence of BASE64 string, if unsuccessful, abort.
+        if not img_base64: return False
 
-        if 'image' in body:
-            self.image = body['image']
+        # Assigns BASE64 string to instance variable.
+        self.img_base64 = img_base64
 
-        if 'reason' in body and body['reason'] != '':
-            self.reason = body['reason']
+        # Process completed successfully, returns true.
+        return True;
 
-        env_variables = dict(os.environ.items())
-        if 'BASE_NAME' in env_variables:
-            self.id = dict(os.environ.items())['BASE_NAME'] + '-' + body['id']
-        else:
-            self.id = 'NO-BASE-NAME-' + body['id']
+    def __decode_base64_image(self):
+        """
+        Decodes BASE64 string into needed image formats.
+        :return: boolean.
+        """
 
-    def __complement_missing_info_using_exif(self, exif):
+        try:
+            # Decodes BASE64 string into bytes.
+            self.img_bytes = base64.b64decode(self.img_base64)
 
-        if not isinstance(exif, dict): return
+            # Decodes bytes into BytesIO object.
+            self.img_bytesIO = io.BytesIO(self.img_bytes)
 
-        # if self.identity['device'] == 'N.A.':
-        device = None
-        if 'Make' in exif and exif['Make'] != '' and exif['Make'] != 'None': device = exif['Make']
-        if 'Model' in exif and exif['Model'] != '' and exif['Model'] != 'None': device += ' ' + exif['Model']
-        if device: self.identity['device'] += f' | (Exif) {device}'
+            # Converts BytesIO object to Pillow object.
+            self.img_pillow = Image.open(self.img_bytesIO)
 
-        if self.identity['coordinates']['lat'] == 'N.A.' or self.identity['coordinates']['lat'] == 'N.A.':
-            if 'GPSInfo' in exif and isinstance(exif['GPSInfo'], dict) and 'lat' in exif['GPSInfo'] and 'lng' in exif['GPSInfo']:
-                try:
-                    _ = float(exif['GPSInfo']['lat'])
-                    _ = float(exif['GPSInfo']['lng'])
-                    self.identity['coordinates'] = exif['GPSInfo']
-                    self.identity['coordinates']['source'] = 'exif'
-                except Exception as e:
-                    print(f"VL - Unable to acquire coordinates from exif GPSInfo: '{str(exif['GPSInfo'])}'. Error: {str(e)}")
+            # Extracts metadata from given results.
+            self.img_meta_data['type'] = str(self.img_pillow.format)
+            self.img_meta_data['width'], self.img_meta_data['height'] = self.img_pillow.size
+            self.img_meta_data['size'] = hl.sizeof_fmt((len(self.img_base64) * 3) / 4 -
+                                                       self.img_base64.count('=', -2), 'B')
+            return True
+
+        except Exception as e:
+            print(rsc.VALIDATION_MSG_BASE64_INTEGRITY_FAILED_DETAILS + ' -> ' + str(e))
+            return False
+
+    def __rotate_image_if_needed(self, orientation: int):
+        """
+        Checks and compensates for EXIF orientation mismatch.
+        :param orientation: int
+        :return: void.
+        """
+
+        # Checks orientation and calculates rotation accordingly.
+        if   orientation == 3 or orientation == 4: rotation = 180
+        elif orientation == 5 or orientation == 6: rotation = 270
+        elif orientation == 7 or orientation == 8: rotation = 90
+        else: return
+
+        # If EXIF orientation is detected, rotate accordingly.
+        print(f"VL - Image orientation mismatch type {orientation} detected. "
+              f"Rotating image by {rotation} degrees counter-clockwise to compensate.")
+        new_image = self.img_pillow.rotate(rotation, expand=1)
+
+        # Consolidates rotation into memory, abort if unsuccessful.
+        try:
+            bytesIO = io.BytesIO()
+            new_image.save(bytesIO, format=self.img_meta_data['type'])
+        except Exception as e:
+            print('VL - Could not update image bytes with newly rotated image: ' + str(e))
+            return
+
+        # Updates instance variables with new values.
+        self.img_pillow = new_image
+        self.img_bytesIO = bytesIO.getvalue()
+        self.img_meta_data['width'], self.img_meta_data['height'] = new_image.size
+        print('VL - Successfully updated image bytes with newly rotated image.')
+
+
+
+
