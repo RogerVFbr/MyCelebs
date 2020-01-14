@@ -11,15 +11,15 @@ class Validation:
 
     def __init__(self, event, metrics: ApiMetrics):
         """
-        Constructor of the Validation object, responsible for treating and exposing data retrieved from the
-        request object.
-        :param event: AWS event object
+        Constructor of the Validation object, responsible for validating, pre-processing and exposing
+        data retrieved from the request object.
+        :param event: AWS event dictionary
         :param metrics: ApiMetrics object, responsible for performance measuring.
         """
 
         self.event = event                # :dict: AWS Event object.
-        self.img_name = 'N.A.'            # :str: User provided name.
-        self.img_desc = 'N.A.'            # :str: User provided image description.
+        self.img_name = None              # :str: User provided name.
+        self.img_desc = None              # :str: User provided image description.
         self.img_base64 = None            # :str: BASE64 encoded string, containing image in original payload form.
         self.img_bytes = None             # :bytes Image in bytes form, product of base64.b64decode()
         self.img_bytesIO = None           # :bytesIO: Image in bytesIO form, to produce a Pillow Image
@@ -50,27 +50,11 @@ class Validation:
 
         # Extract information from request object.
         if not self.__extract_info_from_body():
-            self.failed_return_object = hl.get_return_object(
-                status_code=400,
-                response_code=0,
-                msg_dev='Invalid JSON content.',
-                msg_user='Unable to work with given information.',
-                img_meta_data=self.img_meta_data,
-                api_metrics=self.api_metrics.get()
-            )
             print(rsc.VALIDATION_MSG_REQUEST_INPUT_FIELDS_FAILED)
             return
 
         # Decode BASE64 to desired formats.
         if not self.__decode_base64_image():
-            self.failed_return_object = hl.get_return_object(
-                status_code=400,
-                response_code=0,
-                msg_dev='Invalid BASE64.',
-                msg_user='Unable to decode sent file.',
-                img_meta_data=self.img_meta_data,
-                api_metrics=self.api_metrics.get()
-            )
             print(rsc.VALIDATION_MSG_BASE64_INTEGRITY_FAILED)
             return
 
@@ -82,12 +66,12 @@ class Validation:
         if isinstance(exif, dict) and 'Orientation' in exif and isinstance(exif['Orientation'], int):
             self.__rotate_image_if_needed(exif['Orientation'])
 
-        # Stop validation time counter.
-        self.api_metrics.stop_time('Validation')
-
         # Flag and log validation status as successful (true).
         self.validation_status = True
         print(rsc.VALIDATION_MSG_SUCCESS)
+
+        # Stop validation time counter.
+        self.api_metrics.stop_time('Validation')
 
         # Finish validation execution.
         return
@@ -98,20 +82,22 @@ class Validation:
         :return: boolean.
         """
 
-        # Attempts to extract information from newly acquired request object.
-        event = self.event
-        img_name = event.get('img_name')
-        img_desc = event.get('img_desc')
-        img_base64 = event.get('image')
+        # Extracts information from newly acquired request object.
+        self.img_name = self.event.get('img_name', 'N.A.').strip()
+        self.img_desc = self.event.get('img_desc', 'N.A.').strip()
 
-        # If successful, assigns values to instance variables.
-        if isinstance(img_name, str) and img_name.strip(): self.img_name = img_name.strip()
-        if isinstance(img_desc, str) and img_desc.strip(): self.img_desc = img_desc.strip()
-
-        # Checks for existence of BASE64 string, if unsuccessful, abort.
-        if not img_base64: return False
-
-        # Assigns BASE64 string to instance variable.
+        # Checks for existence of BASE64 string and assing value to instance variable. If unsuccessful, abort.
+        img_base64 = self.event.get('image')
+        if not img_base64:
+            self.failed_return_object = hl.get_return_object(
+                status_code=400,
+                response_code=0,
+                msg_dev='Invalid JSON content.',
+                msg_user='Unable to work with given information.',
+                img_meta_data=self.img_meta_data,
+                api_metrics=self.api_metrics.get()
+            )
+            return False
         self.img_base64 = img_base64
 
         # Process completed successfully, returns true.
@@ -119,7 +105,7 @@ class Validation:
 
     def __decode_base64_image(self):
         """
-        Decodes BASE64 string into needed image formats.
+        Decodes BASE64 string into desired image formats.
         :return: boolean.
         """
 
@@ -141,7 +127,16 @@ class Validation:
             return True
 
         except Exception as e:
+            # Unable to decode BASE64 image string, build failed return object and abort execution.
             print(rsc.VALIDATION_MSG_BASE64_INTEGRITY_FAILED_DETAILS + ' -> ' + str(e))
+            self.failed_return_object = hl.get_return_object(
+                status_code=400,
+                response_code=0,
+                msg_dev='Invalid BASE64.',
+                msg_user='Unable to decode sent file.',
+                img_meta_data=self.img_meta_data,
+                api_metrics=self.api_metrics.get()
+            )
             return False
 
     def __rotate_image_if_needed(self, orientation: int):
