@@ -9,17 +9,19 @@ def add_picture(event, context):
     # Initialize metrics gathering tool
     metrics = ApiMetrics()
 
-    # Perform validation stage
+    # Execute validation stage
     vl = Validation(event, metrics)
     if not vl.validation_status:
         return vl.failed_return_object
 
-    # Perform celebrity recognition stage
+    # Execute celebrity recognition stage
     rc = RecognizeCelebrity(vl.img_bytes, vl.img_meta_data, metrics)
     if not rc.recognition_status:
         return rc.failed_return_object
 
+    # Save image
 
+    # Save log
 
     # Return success object
     return hl.get_return_object(

@@ -8,20 +8,29 @@ from Utilities.Helpers.Helpers import Helpers as hl
 class RecognizeCelebrity:
 
     def __init__(self, img_bytes: str, img_meta_data: dict,  api_metrics: ApiMetrics):
-        self.img_bytes = img_bytes
-        self.img_meta_data = img_meta_data
-        self.celebrities = []
-        self.orientation_correction = None
-        self.recognition_status = False
-        self.failed_return_object = {}
-        self.api_metrics = api_metrics
+        """
+        Constructor of the celebrity recognition object, responsible for accessing AWS celebrity recognition API with
+        the user provided image in bytes form. Is also responsible for validating and processing the response.
+        :param img_bytes: string containing client provided image in bytes form
+        :param img_meta_data: dictionary of image extracted meta data.
+        :param api_metrics: ApiMetrics object, responsible for performance measuring.
+        """
 
-        self.__recognize_celebrity()
+        self.img_bytes = img_bytes                  # :str: Client provided image in bytes form.
+        self.img_meta_data = img_meta_data          # :dict: Dictionary containing image meta data (including EXIF)
+        self.celebrities = []                       # :list: List of Celebrity objects built from API response.
+        self.orientation_correction = None          # :str: Recognition API orientation recomendation
+
+        self.recognition_status = False             # :boolean: Flag to expose recognition status failed or successful.
+        self.failed_return_object = {}              # :dict: Exposes failure return object in case of failure
+        self.api_metrics = api_metrics              # :ApiMetrics: Stores metrics object responsible time measurements.
+
+        self.__recognize_celebrity()                # Initiate validation procedure
 
     def __recognize_celebrity(self):
         """
-
-        :return: void
+        Object's main function/procedure: communicates with API, triggers evaluation and organization of response.
+        :return: void.
         """
 
         # Start recognition time counter.
@@ -45,9 +54,9 @@ class RecognizeCelebrity:
 
     def __evaluate_response_status(self, response: dict):
         """
-
-        :param response:
-        :return:
+        Evaluates response object integrity and status.
+        :param response: Dictionary containing recognition API's response.
+        :return: boolean.
         """
 
         # If HTTPStatusCode is not available in response dictionary, abort execution.
@@ -83,8 +92,8 @@ class RecognizeCelebrity:
 
     def __digest_response(self, response: dict):
         """
-
-        :param response:
+        Translate recognition API response structure to project's (Celebrity objects list).
+        :param response: Dictionary containing recognition API's response.
         :return: boolean.
         """
 
@@ -101,7 +110,7 @@ class RecognizeCelebrity:
             )
             return False
 
-        # If any celebrities could be found, make a list of dicts with essential information.
+        # If one or more celebrities were found, make a list of dicts with essential information.
         if len(response['CelebrityFaces']) > 0:
             for celebrity in response['CelebrityFaces']:
                 self.celebrities.append(Celebrity(
@@ -120,7 +129,7 @@ class RecognizeCelebrity:
                     urls=[]
             ).__dict__)
 
-        # Store orientation recommendation from AWS into instance variable.
+        # Store image orientation recommendation from AWS into instance variable.
         self.orientation_correction = response.get('OrientationCorrection', 'N.A.')
 
         # Log and return successful execution.

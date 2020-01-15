@@ -18,30 +18,29 @@ class Validation:
         """
 
         self.event = event                # :dict: AWS Event object.
-        self.img_name = None              # :str: User provided name.
-        self.img_desc = None              # :str: User provided image description.
+        self.img_name = None              # :str: Client provided name.
+        self.img_desc = None              # :str: Client provided image description.
         self.img_base64 = None            # :str: BASE64 encoded string, containing image in original payload form.
-        self.img_bytes = None             # :bytes Image in bytes form, product of base64.b64decode()
-        self.img_bytesIO = None           # :bytesIO: Image in bytesIO form, to produce a Pillow Image
-        self.img_pillow = None            # :Image: Pillow Image object (rotation, exif)
+        self.img_bytes = None             # :bytes Image in bytes form, product of base64.b64decode().
+        self.img_bytesIO = None           # :bytesIO: Image in bytesIO form, to produce a Pillow Image.
+        self.img_pillow = None            # :Image: Pillow Image object (rotation, exif).
         self.img_meta_data = {
-            'type': 'N.A.',               # :str: Image type (JPG, PNG) 
-            'size': 'N.A.',               # :str: Image size in KB
-            'height': 'N.A.',             # :int: Image height in pixels
-            'width': 'N.A.',              # :int: Image width in pixels (ind)
-            'exif': 'N.A.'                # :dict: or :str: Dictionary containing exif information if available
+            'type': 'N.A.',               # :str: Image type (JPG, PNG).
+            'size': 'N.A.',               # :str: Image size in KB.
+            'height': 'N.A.',             # :int: Image height in pixels.
+            'width': 'N.A.',              # :int: Image width in pixels (ind).
+            'exif': 'N.A.'                # :dict: or :str: Dictionary containing exif information if available.
         }
 
-        self.validation_status = False    # :bool: Flag to expose validation status failed or successful.
-        self.failed_return_object = {}    # :dict: Exposes fail return object in case of failure
+        self.validation_status = False    # :boolean: Flag to expose validation status failed or successful.
+        self.failed_return_object = {}    # :dict: Exposes failure return object in case of failure.
         self.api_metrics = metrics        # :ApiMetrics: Stores metrics object responsible time measurements.
         
-        self.__validate_request_object()  # Initiate validation process
+        self.__validate_request_object()  # Initiate validation procedure
 
     def __validate_request_object(self):
         """
-        Validates, decodes and extracts information from request object.
-        :param event: Request object.
+        Object's main function: validates, decodes and extracts information from request object.
         :return: void.
         """
 
@@ -73,9 +72,6 @@ class Validation:
         # Stop validation time counter.
         self.api_metrics.stop_time('Validation')
 
-        # Finish validation execution.
-        return
-
     def __extract_info_from_body(self):
         """
         Double checks request object's fields and content existence and copies values to instance variables.
@@ -86,7 +82,7 @@ class Validation:
         self.img_name = self.event.get('img_name', 'N.A.').strip()
         self.img_desc = self.event.get('img_desc', 'N.A.').strip()
 
-        # Checks for existence of BASE64 string and assing value to instance variable. If unsuccessful, abort.
+        # Checks for existence of BASE64 string and assigns value to instance variable. If unsuccessful, abort.
         img_base64 = self.event.get('image')
         if not img_base64:
             self.failed_return_object = hl.get_return_object(
