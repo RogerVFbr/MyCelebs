@@ -36,6 +36,6 @@ def add_picture(event, context):
         response_code=0,
         msg_dev='Success',
         msg_user='Success',
-        img_meta_data=vl.img_meta_data,
+        img_meta_data=pp.img_meta_data,
         api_metrics=rc.get_metrics()
     )

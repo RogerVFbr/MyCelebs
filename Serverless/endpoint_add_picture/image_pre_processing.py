@@ -20,6 +20,7 @@ class ImagePreProcessing(APIPhase):
 
         self.img_bytes = img_bytes           # :bytes: Image in bytes form, product of base64.b64decode().
         self.img_pillow = None               # :Image: Pillow Image object (rotation, exif).
+        self.img_size = None
         self.img_meta_data = {
             'type': 'N.A.',                 # :str: Image type (JPG, PNG).
             'size': 'N.A.',                 # :str: Image size in KB.
@@ -54,7 +55,7 @@ class ImagePreProcessing(APIPhase):
         if isinstance(exif, dict) and 'Orientation' in exif and isinstance(exif['Orientation'], int):
             self.__rotate_image_if_needed(exif['Orientation'])
 
-        # Update metadata
+        # Update image metadata instance variables.
         self.__update_meta_data()
 
         # Flag and log pre-processing status as successful (true).
@@ -108,6 +109,7 @@ class ImagePreProcessing(APIPhase):
         # Updates instance variables with new values.
         self.img_pillow = new_image
         self.img_bytes = bytesIO.getvalue()
+        self.img_size = bytesIO.tell()
 
         self.log('Successfully updated image bytes with newly rotated image.')
 
@@ -116,8 +118,7 @@ class ImagePreProcessing(APIPhase):
         # Extracts metadata from final image.
         self.img_meta_data['type'] = str(self.img_pillow.format)
         self.img_meta_data['width'], self.img_meta_data['height'] = self.img_pillow.size
-        self.img_meta_data['size'] = self.__sizeof_fmt((len(self.img_b64_str) * 3) / 4 -
-                                                       self.img_b64_str.count('=', -2), 'B')
+        self.img_meta_data['size'] = self.__sizeof_fmt(self.img_size, 'B')
 
         # Updates EXIF data if available.
         self.img_meta_data['exif'] = eu.get_exif_data(self.img_pillow)

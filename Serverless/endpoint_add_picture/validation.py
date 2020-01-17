@@ -7,10 +7,9 @@ class Validation(APIPhase):
 
     def __init__(self, event: dict):
         """
-        Constructor of the Validation object, responsible for validating, pre-processing and exposing
-        data retrieved from the client sent request object.
+        Constructor of the Validation object, responsible for validating and exposing data retrieved from the client
+        sent request object.
         :param event: AWS event dictionary.
-        :param metrics: ApiMetrics object, responsible for performance measuring.
         """
 
         # Initializes APIPhase superclass parameters
@@ -26,7 +25,7 @@ class Validation(APIPhase):
 
     def __execute(self):
         """
-        Object's main procedure: validates, decodes and extracts information from request object.
+        Object's main procedure: validates, extracts and decodes information from client provided request object.
         :return: void.
         """
 
