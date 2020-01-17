@@ -2,9 +2,9 @@ import boto3, hashlib, copy
 
 from boto3.dynamodb.conditions import Key
 
-from Utilities.Helpers.Helpers import Helpers as hl
-from Resources.EnvironmentVariables import EnvironmentVariables as ev
-from Resources.Resources_strings_en import Strings as rsc
+from utilities.helpers import Helpers as hl
+from resources.environment_variables import EnvironmentVariables as ev
+from resources.strings_en import Strings as rsc
 
 
 class Dao:

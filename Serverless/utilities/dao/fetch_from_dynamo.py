@@ -1,6 +1,6 @@
 from boto3.dynamodb.conditions import Key, Attr
 from boto3 import resource
-from Resources.EnvironmentVariables import EnvironmentVariables as ev
+from resources.environment_variables import EnvironmentVariables as ev
 
 
 class FetchFromDynamo:

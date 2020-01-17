@@ -48,7 +48,7 @@ provider:
 
 functions:
   addPicture:
-    handler: Endpoint_AddPicture/AddPicture.add_picture
+    handler: endpoint_add_picture/add_picture.add_picture
     layers:
       - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:8
     events:
@@ -59,7 +59,7 @@ functions:
           cors: true
           request:
             schema:
-              application/json: ${file(Utilities/ValidationSchemas/AddPictureSchema.json)}
+              application/json: ${file(utilities/validation_schemas/add_picture_schema.json)}
 
 resources:
   Resources:

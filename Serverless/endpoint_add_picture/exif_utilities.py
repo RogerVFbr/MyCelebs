@@ -1,11 +1,12 @@
-from Utilities.Helpers.Helpers import Helpers as hl
+from utilities.helpers import Helpers as hl
 from PIL.ExifTags import TAGS, GPSTAGS
+
 
 class ExifUtilities:
 
     @classmethod
     def get_exif_data(cls, image):
-        exif_data = 'N.A.'
+        exif_data = {}
         info = getattr(image, '_getexif', lambda: None)()
         if info:
             exif_data = {}
