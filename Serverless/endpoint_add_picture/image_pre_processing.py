@@ -6,35 +6,39 @@ from endpoint_add_picture.exif_utilities import ExifUtilities as eu
 
 
 class ImagePreProcessing(APIPhase):
+    """
+    Image pre-processing object, responsible for converting image to API required Pillow Image format, performing
+    any processing required, extracting and exposing resulting meta data.
+    """
 
     def __init__(self, img_bytes: bytes, invocation_id: str):
         """
-        Constructor of the Validation object, responsible for validating, pre-processing and exposing
-        data retrieved from the client sent request object.
-        :param event: AWS event dictionary.
-        :param metrics: ApiMetrics object, responsible for performance measuring.
+        Constructor of the Image pre-processing object, stores provided and locally generated data, runs main object
+        procedure.
+        :param img_bytes: validation provided image in bytes form.
+        :param invocation_id: string containing id of current cloud function invocation to be to be used by API metrics.
         """
 
         # Initializes APIPhase superclass parameters
         super(ImagePreProcessing, self).__init__(prefix='PP')
 
+        self.invocation_id = invocation_id   # :str: Current cloud function invocation id for metrics.
         self.img_bytes = img_bytes           # :bytes: Image in bytes form, product of base64.b64decode().
         self.img_pillow = None               # :Image: Pillow Image object (rotation, exif).
-        self.img_size = None
         self.img_meta_data = {
-            'type': 'N.A.',                 # :str: Image type (JPG, PNG).
-            'size': 'N.A.',                 # :str: Image size in KB.
-            'height': 'N.A.',               # :int: Image height in pixels.
-            'width': 'N.A.',                # :int: Image width in pixels.
-            'exif': {}                      # :dict: Dictionary containing exif information if available.
+            'type': 'N.A.',                  # :str: Image type (JPG, PNG).
+            'size': 'N.A.',                  # :str: Image size in KB.
+            'height': 'N.A.',                # :int: Image height in pixels.
+            'width': 'N.A.',                 # :int: Image width in pixels.
+            'exif': {}                       # :dict: Dictionary containing exif information if available.
         }
-        self.invocation_id = self.get_id(invocation_id)
 
-        self.__execute()                     # Initiate validation procedure upon instantiation.
+        self.__run()                         # Initiate validation procedure upon instantiation.
 
-    def __execute(self):
+    def __run(self):
         """
-        Object's main procedure: validates, decodes and extracts information from request object.
+        Object's main procedure: logs current api phase, takes care of api metrics measurements, creates Pillow
+        Image object, rotates image based on EXIF orientation (if available) and extracts image meta data.
         :return: void.
         """
 
@@ -42,48 +46,52 @@ class ImagePreProcessing(APIPhase):
         self.start_metrics('Pre-processing')
 
         # Log pre-processing phase start.
-        self.log(self.rsc.VALIDATION_PHASE_START)
+        self.log(self.rsc.PRE_PROC_PHASE_START)
 
         # Create Pillow Image Object, abort if impossible.
         if not self.__convert_image_bytes_to_pillow(): return
 
-        # Extract EXIF data if available.
-        self.img_meta_data['exif'] = eu.get_exif_data(self.img_pillow)
-
         # Correct image orientation based on EXIF data if possible and needed.
-        exif = self.img_meta_data['exif']
+        exif = eu.get_exif_data(self.img_pillow)
         if isinstance(exif, dict) and 'Orientation' in exif and isinstance(exif['Orientation'], int):
             self.__rotate_image_if_needed(exif['Orientation'])
+        else:
+            self.log(self.rsc.PRE_PROC_NO_EXIF_ORIENTATION)
 
         # Update image metadata instance variables.
         self.__update_meta_data()
 
         # Flag and log pre-processing status as successful (true).
         self.status = True
-        self.log('Image pre-processing concluded successfully.')
+        self.log(self.rsc.PRE_PROC_SUCCESSFUL)
 
         # Stop pre-processing time counter.
         self.stop_metrics('Pre-processing')
 
-    def __convert_image_bytes_to_pillow(self):
+    def __convert_image_bytes_to_pillow(self) -> bool:
+        """
+        Attempts to convert provided image in bytes form to business logic required Pillow format.
+        :return: boolean. Value expresses whether procedure has executed successfully or not.
+        """
 
+        # Attempts to create a Pillow Image object from given image bytes.
         try:
             self.img_pillow = Image.open(io.BytesIO(self.img_bytes))
 
+        # Unable to decode image bytes, build failed return object and abort execution.
         except Exception as e:
-            # Unable to decode BASE64 image string, build failed return object and abort execution.
-            error_response = self.err.UNDECODABLE_BASE64_STRING
+            error_response = self.err.UNDECODABLE_IMAGE_BYTES
             self.log(error_response.aws_log.format(str(e)))
             self.failed_return_object = self.get_failed_return_object(error_response, {}, self.get_metrics())
             return False
 
-        self.log('Created Pillow Image object.')
+        self.log(self.rsc.PRE_PROC_CREATED_PILLOW_OBJECT)
         return True
 
     def __rotate_image_if_needed(self, orientation: int):
         """
-        Checks and compensates for EXIF orientation mismatch.
-        :param orientation: int
+        Checks and compensates for EXIF orientation mismatch if available/possible/needed.
+        :param orientation: int. Expresses the EXIF Orientation type.
         :return: void.
         """
 
@@ -91,11 +99,12 @@ class ImagePreProcessing(APIPhase):
         if   orientation == 3 or orientation == 4: rotation = 180
         elif orientation == 5 or orientation == 6: rotation = 270
         elif orientation == 7 or orientation == 8: rotation = 90
-        else: return
+        else:
+            self.log(self.rsc.PRE_PROC_NO_ROTATION_NEEDED.format(orientation))
+            return
 
         # If EXIF orientation is detected, rotate accordingly.
-        self.log(f"Image orientation mismatch type {orientation} detected. "
-              f"Rotating image by {rotation} degrees counter-clockwise to compensate.")
+        self.log(self.rsc.PRE_PROC_ORIENTATION_MISMATCH_DETECTED.format(orientation, rotation))
         new_image = self.img_pillow.rotate(rotation, expand=1)
 
         # Consolidates rotation into memory, abort if unsuccessful.
@@ -103,30 +112,37 @@ class ImagePreProcessing(APIPhase):
             bytesIO = io.BytesIO()
             new_image.save(bytesIO, format=self.img_meta_data['type'])
         except Exception as e:
-            self.log.log('Could not update image bytes with newly rotated image: ' + str(e))
+            self.log(self.rsc.PRE_PROC_UNABLE_TO_UPDATE_BYTES.format(str(e)))
             return
 
         # Updates instance variables with new values.
         self.img_pillow = new_image
         self.img_bytes = bytesIO.getvalue()
-        self.img_size = bytesIO.tell()
 
-        self.log('Successfully updated image bytes with newly rotated image.')
+        # Log successful image rotation.
+        self.log(self.rsc.PRE_PROC_SUCCESSFULLY_ROTATED)
 
     def __update_meta_data(self):
+        """
+        Updates instance meta data dictionary with finalized, pre-processed image meta data.
+        :return: void.
+        """
 
         # Extracts metadata from final image.
         self.img_meta_data['type'] = str(self.img_pillow.format)
         self.img_meta_data['width'], self.img_meta_data['height'] = self.img_pillow.size
-        self.img_meta_data['size'] = self.__sizeof_fmt(self.img_size, 'B')
+        self.img_meta_data['size'] = self.__sizeof_fmt(len(self.img_pillow.fp.read()), 'B')
 
         # Updates EXIF data if available.
         self.img_meta_data['exif'] = eu.get_exif_data(self.img_pillow)
 
+        # Logs acquired meta data
+        self.log(self.rsc.RECOGNITION_ACQUIRED_META_DATA.format(str(self.img_meta_data)))
+
     @staticmethod
-    def __sizeof_fmt(num, suffix='B'):
+    def __sizeof_fmt(num, suffix='B') -> str:
         """
-        Formats amount of bytes by order of magnitude
+        Formats amount of bytes by order of magnitude.
         :param num: Number to be processed.
         :param suffix: Order of magnitude.
         :return: Formatted string.

@@ -19,6 +19,14 @@ class Errors:
         response_code=0
     )
 
+    UNDECODABLE_IMAGE_BYTES = Error(
+        aws_log='FAILED to convert image bytes to Pillow Image object: {}',
+        msg_dev='Unable to decode image bytes.',
+        msg_user='Unable to decode sent file.',
+        status_code=400,
+        response_code=0
+    )
+
     UNEXPECTED_REKOGNITION_RESPONSE_STRUCTURE = Error(
         aws_log='ERROR: "recognize_celebrities" response structure might have changed: {}',
         msg_dev='Unexpected "recognize_celebrities" API response structure.',

@@ -27,7 +27,6 @@ class ExifUtilities:
                     exif_data[str(decoded)] = value
 
         hl.convert_structure_content_to_strings(exif_data)
-        print(f"VL - Acquired EXIF info: {exif_data}")
         return exif_data
 
     @classmethod

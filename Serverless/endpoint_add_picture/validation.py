@@ -4,11 +4,14 @@ from interfaces.api_phase import APIPhase
 
 
 class Validation(APIPhase):
+    """
+    Validation object, responsible for validating, decoding and exposing data retrieved from the client's
+    sent request object (event dictionary).
+    """
 
     def __init__(self, event: dict):
         """
-        Constructor of the Validation object, responsible for validating and exposing data retrieved from the client
-        sent request object.
+        Constructor of the Validation object, stores client provided data and executes main validation procedure.
         :param event: AWS event dictionary.
         """
 
@@ -21,11 +24,12 @@ class Validation(APIPhase):
         self.img_b64_str = None             # :str: BASE64 encoded string, containing image in original payload form.
         self.img_bytes = None               # :bytes: Image in bytes form, product of base64.b64decode().
 
-        self.__execute()                    # Initiate validation procedure upon instantiation.
+        self.__run()                        # Initiate validation procedure upon instantiation.
 
-    def __execute(self):
+    def __run(self):
         """
-        Object's main procedure: validates, extracts and decodes information from client provided request object.
+        Object's main procedure: logs current api phase, takes care of api metrics measurements and runs each of
+        the validation procedures sequentially.
         :return: void.
         """
 
@@ -43,15 +47,15 @@ class Validation(APIPhase):
 
         # Flag and log validation status as successful (true).
         self.status = True
-        self.log(self.rsc.VALIDATION_MSG_SUCCESS)
+        self.log(self.rsc.VALIDATION_SUCCESSFUL)
 
         # Stop validation time counter.
         self.stop_metrics('Validation')
 
-    def __extract_info_from_body(self):
+    def __extract_info_from_body(self) -> bool:
         """
         Double checks request object's fields and content existence and copies values to instance variables.
-        :return: boolean.
+        :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
 
         # Extracts information from newly acquired request object.
@@ -71,10 +75,10 @@ class Validation(APIPhase):
         self.log(self.rsc.VALIDATION_EXTRACTED_BODY_PAYLOAD)
         return True
 
-    def __decode_base64_image(self):
+    def __decode_base64_image(self) -> bool:
         """
         Decodes BASE64 string into bytes.
-        :return: boolean.
+        :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
 
         # Attempts to decode BASE64 string into bytes.
