@@ -60,6 +60,10 @@ class APIPhase(ABC):
 
     @abstractmethod
     def run(self) -> bool:
+        """
+        Phase business logic (to be overriden by child phase classes).
+        :return: boolean. Value expresses whether procedure has executed successfully or not.
+        """
         pass
 
     @staticmethod

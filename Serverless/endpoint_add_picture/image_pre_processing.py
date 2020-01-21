@@ -7,7 +7,7 @@ from endpoint_add_picture.exif_utilities import ExifUtilities as eu
 
 class ImagePreProcessing(APIPhase):
     """
-    Image pre-processing object, responsible for converting image to API required Pillow Image format, performing
+    Image pre-processing object, responsible for converting image to required Pillow Image format, performing
     any processing required, extracting and exposing resulting meta data.
     """
 
@@ -43,11 +43,7 @@ class ImagePreProcessing(APIPhase):
         if not self.__convert_image_bytes_to_pillow(): return False
 
         # Corrects image orientation based on EXIF data if possible and needed.
-        exif = eu.get_exif_data(self.img_pillow)
-        if isinstance(exif, dict) and 'Orientation' in exif and isinstance(exif['Orientation'], int):
-            self.__rotate_image_if_needed(exif['Orientation'])
-        else:
-            self.log(self.rsc.PRE_PROC_NO_EXIF_ORIENTATION)
+        self.__rotate_image_if_needed()
 
         # Updates image metadata instance variables.
         self.__update_meta_data()
@@ -76,12 +72,18 @@ class ImagePreProcessing(APIPhase):
         self.log(self.rsc.PRE_PROC_CREATED_PILLOW_OBJECT)
         return True
 
-    def __rotate_image_if_needed(self, orientation: int):
+    def __rotate_image_if_needed(self):
         """
-        Checks and compensates for EXIF orientation mismatch if available/possible/needed.
+        Checks and compensates for EXIF orientation mismatch if available and needed.
         :param orientation: int. Expresses the EXIF Orientation type.
         :return: void.
         """
+
+        # Attempts to extract EXIF data fro Pillow Image object
+        orientation = eu.get_exif_data(self.img_pillow).get('Orientation')
+        if not orientation:
+            self.log(self.rsc.PRE_PROC_NO_EXIF_ORIENTATION)
+            return
 
         # Checks orientation and calculates rotation accordingly.
         if   orientation == 3 or orientation == 4: rotation = 180
