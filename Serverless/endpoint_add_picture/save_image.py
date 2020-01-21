@@ -12,8 +12,7 @@ class SaveImage(APIPhase):
 
     def run(self) -> bool:
         """
-        Object's main procedure: logs current api phase, takes care of api metrics measurements, communicates with
-        image saving dao and evaluates response.
+        Object's main procedure: executes image saving DAO and evaluates response.
         :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
 

@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 from interfaces.models.response_object import ResponseObject
 from utilities.api_metrics import ApiMetrics
+from resources.environment_variables import EnvironmentVariables
 from resources.errors import Errors
 from resources.models.error import Error
 from resources.strings_en import Strings
@@ -15,6 +16,10 @@ class APIPhase(ABC):
     and exposing phase status, error objects and message strings. Also stores cloud function invocation ID and provides
     interfaces for accessing the metrics API and logging. Serves as a factory for response objects.
     """
+
+    err = Errors                                         # :Error: Contains error message objects.
+    rsc = Strings                                        # :Strings: Contains general strings.
+    env = EnvironmentVariables                           # :EnvironmentVariables: Contains environment variables.
 
     def __init__(self, prefix: str, phase_name: str, invocation_id: str = None):
         """
@@ -28,8 +33,6 @@ class APIPhase(ABC):
         self.failed_return_object = {}                   # :dict: Exposes failure return object in case of failure.
         self.prefix = prefix                             # :str: Current API phase prefix for logging.
         self.phase_name = phase_name                     # :str: Current API phase name.
-        self.err = Errors                                # :Error: Contains error message objects.
-        self.rsc = Strings                               # :Strings: Contains general strings.
         self.invocation_id = self.get_id(invocation_id)  # :str: Handles execution invocation Id for metrics.
 
         super().__init__()                               # Runs ABC abstract class initialization.
