@@ -33,8 +33,7 @@ class RecognizeCelebrity(APIPhase):
         """
 
         # Execute request on celebrity recognition API using given image bytes.
-        client = boto3.client('rekognition')
-        response = client.recognize_celebrities(Image={'Bytes': self.img_bytes})
+        response = boto3.client('rekognition').recognize_celebrities(Image={'Bytes': self.img_bytes})
 
         # Evaluate recognize_celebrities API response status, abort if failed.
         if not self.__evaluate_response_status(response): return False
