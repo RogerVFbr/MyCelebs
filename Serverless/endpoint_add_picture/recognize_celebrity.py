@@ -10,7 +10,7 @@ class RecognizeCelebrity(APIPhase):
     image in bytes form. Is also responsible for validating and processing the response.
     """
 
-    def __init__(self, img_bytes: str, img_meta_data: dict,  invocation_id: str):
+    def __init__(self, img_bytes: str,  invocation_id: str):
         """
         Constructor of the celebrity recognition object, stores provided and locally generated data, runs main object
         procedure.
@@ -19,87 +19,70 @@ class RecognizeCelebrity(APIPhase):
         :param invocation_id: string containing id of current cloud function invocation to be to be used by API metrics.
         """
 
-        # Initializes APIPhase superclass parameters
-        super(RecognizeCelebrity, self).__init__(prefix='RE', invocation_id=invocation_id)
-
-        self.invocation_id = invocation_id      # :str: Current cloud function invocation id for metrics.
         self.img_bytes = img_bytes              # :str: Client provided image in bytes form.
-        self.img_meta_data = img_meta_data      # :dict: Dictionary containing image meta data (including EXIF).
         self.celebrities = []                   # :list: List of Celebrity objects in dict form built from API response.
         self.orientation_correction = None      # :str: Recognition API orientation recommendation.
 
-        self.__run()                            # Initiate recognition procedure upon instantiation.
+        # Initializes APIPhase superclass parameters and procedures
+        super(RecognizeCelebrity, self).__init__(prefix='RE', phase_name='Recognition', invocation_id=invocation_id)
 
-    def __run(self):
+    def run(self) -> bool:
         """
-        Object's main procedure: logs current api phase, takes care of api metrics measurements, communicates with API,
-        triggers evaluation and organization of response.
-        :return: void.
+        Object's main procedure: communicates with recognition API, evaluates and organizes response.
+        :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
 
-        # Start recognition time counter.
-        self.start_metrics('Recognition')
-
-        # Log recognition phase start.
-        self.log(self.rsc.RECOGNITION_PHASE_START)
-
-        # Execute request on celebrity recognition API using given image bytes
+        # Execute request on celebrity recognition API using given image bytes.
         client = boto3.client('rekognition')
         response = client.recognize_celebrities(Image={'Bytes': self.img_bytes})
 
-        # Evaluate recognize_celebrities API response status
-        if not self.__evaluate_response_status(response): return
+        # Evaluate recognize_celebrities API response status, abort if failed.
+        if not self.__evaluate_response_status(response): return False
 
         # Digest response if available, abort if impossible.
-        if not self.__digest_response(response): return
+        if not self.__digest_response(response): return False
 
-        # Flag recognition operation as successful
-        self.status = True
-        self.log(self.rsc.RECOGNITION_SUCCESSFUL)
-
-        # Stop recognition time counter.
-        self.stop_metrics('Recognition')
+        # Procedure successful
+        return True
 
     def __evaluate_response_status(self, response: dict) -> bool:
         """
         Evaluates response object integrity and status.
         :param response: Dictionary containing recognition API's response.
-        :return: boolean.
+        :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
 
         # If HTTPStatusCode is not available in response dictionary, fill up return object and abort execution.
         if not response.get('ResponseMetadata', {}).get('HTTPStatusCode'):
             error_response = self.err.UNEXPECTED_REKOGNITION_RESPONSE_STRUCTURE
             self.log(error_response.aws_log.format(response))
-            self.failed_return_object = self.get_failed_return_object(error_response, self.img_meta_data,
-                                                                      self.get_metrics())
+            self.failed_return_object = self.get_failed_return_object(error_response, {}, self.get_metrics())
             return False
 
         # If HTTPStatusCode is successful (200), return success.
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-            self.log(self.rsc.RECOGNITION_RESPONSE_ACQUIRED.format(str(response)))
+            self.log(self.rsc.RECOGNITION_RESPONSE_ACQUIRED)
             return True
 
         # If HTTPStatusCode has failed (other than 200), fill up return object and return failure.
         else:
             error_response = self.err.FAILED_REKOGNITION_RESPONSE
-            self.log(error_response.aws_log + str(response))
-            self.failed_return_object = self.get_failed_return_object(error_response,
-                                                                      self.img_meta_data, self.get_metrics())
+            self.log(error_response.aws_log.format(response))
+            self.failed_return_object = self.get_failed_return_object(error_response, {}, self.get_metrics())
             return False
 
     def __digest_response(self, response: dict) -> bool:
         """
         Translate recognition API response structure to project's (Celebrity objects list).
         :param response: Dictionary containing recognition API's response.
-        :return: boolean.
+        :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
 
         # If main property 'CelebrityFaces' not found in the response, fill up return object and abort execution.
         if not response.get('CelebrityFaces'):
-            self.log(self.err.UNEXPECTED_REKOGNITION_RESPONSE_STRUCTURE.aws_log + str(response))
-            self.failed_return_object = self.get_failed_return_object(
-                self.err.UNEXPECTED_REKOGNITION_RESPONSE_STRUCTURE, self.img_meta_data, self.get_metrics())
+            error_response = self.err.UNEXPECTED_REKOGNITION_RESPONSE_STRUCTURE
+            self.log(error_response.aws_log + str(response))
+            self.failed_return_object = self.get_failed_return_object(error_response, {}, self.get_metrics())
             return False
 
         # If one or more celebrities were found, store a list of dicts with essential information.

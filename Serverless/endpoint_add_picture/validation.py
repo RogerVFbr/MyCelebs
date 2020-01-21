@@ -15,42 +15,29 @@ class Validation(APIPhase):
         :param event: AWS event dictionary.
         """
 
-        # Initializes APIPhase superclass parameters
-        super(Validation, self).__init__(prefix='VL')
-
         self.event = event                  # :dict: AWS Event object.
         self.img_name = None                # :str: Client provided name.
         self.img_desc = None                # :str: Client provided image description.
         self.img_b64_str = None             # :str: BASE64 encoded string, containing image in original payload form.
         self.img_bytes = None               # :bytes: Image in bytes form, product of base64.b64decode().
 
-        self.__run()                        # Initiate validation procedure upon instantiation.
+        # Initializes APIPhase superclass parameters and procedures
+        super(Validation, self).__init__(prefix='VL', phase_name='Validation')
 
-    def __run(self):
+    def run(self) -> bool:
         """
-        Object's main procedure: logs current api phase, takes care of api metrics measurements and runs each of
-        the validation procedures sequentially.
-        :return: void.
+        Object's main procedure: extract and decode information from event object.
+        :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
-
-        # Start validation time counter.
-        self.start_metrics('Validation')
-
-        # Log validation phase start
-        self.log(self.rsc.VALIDATION_PHASE_START)
 
         # Extract information from request object and abort if unable.
-        if not self.__extract_info_from_body(): return
+        if not self.__extract_info_from_body(): return False
 
         # Decode BASE64 to desired format and abort if unable.
-        if not self.__decode_base64_image(): return
+        if not self.__decode_base64_image(): return False
 
-        # Flag and log validation status as successful (true).
-        self.status = True
-        self.log(self.rsc.VALIDATION_SUCCESSFUL)
-
-        # Stop validation time counter.
-        self.stop_metrics('Validation')
+        # Procedure successful
+        return True
 
     def __extract_info_from_body(self) -> bool:
         """

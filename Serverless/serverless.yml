@@ -59,7 +59,7 @@ functions:
           cors: true
           request:
             schema:
-              application/json: ${file(utilities/validation_schemas/add_picture_schema.json)}
+              application/json: ${file(endpoint_add_picture/validation_schema/add_picture_schema.json)}
 
 resources:
   Resources:

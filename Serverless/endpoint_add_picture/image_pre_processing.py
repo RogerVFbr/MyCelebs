@@ -19,10 +19,6 @@ class ImagePreProcessing(APIPhase):
         :param invocation_id: string containing id of current cloud function invocation to be to be used by API metrics.
         """
 
-        # Initializes APIPhase superclass parameters
-        super(ImagePreProcessing, self).__init__(prefix='PP')
-
-        self.invocation_id = invocation_id   # :str: Current cloud function invocation id for metrics.
         self.img_bytes = img_bytes           # :bytes: Image in bytes form, product of base64.b64decode().
         self.img_pillow = None               # :Image: Pillow Image object (rotation, exif).
         self.img_meta_data = {
@@ -33,44 +29,35 @@ class ImagePreProcessing(APIPhase):
             'exif': {}                       # :dict: Dictionary containing exif information if available.
         }
 
-        self.__run()                         # Initiate validation procedure upon instantiation.
+        # Initializes APIPhase superclass parameters and procedures
+        super(ImagePreProcessing, self).__init__(prefix='PP', phase_name='Pre-processing', invocation_id=invocation_id)
 
-    def __run(self):
+    def run(self) -> bool:
         """
-        Object's main procedure: logs current api phase, takes care of api metrics measurements, creates Pillow
-        Image object, rotates image based on EXIF orientation (if available) and extracts image meta data.
-        :return: void.
+        Object's main procedure: creates Pillow Image object, rotates image based on EXIF orientation (if available)
+        and extracts image meta data.
+        :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
 
-        # Start pre-processing time counter.
-        self.start_metrics('Pre-processing')
+        # Creates Pillow Image Object, abort if impossible.
+        if not self.__convert_image_bytes_to_pillow(): return False
 
-        # Log pre-processing phase start.
-        self.log(self.rsc.PRE_PROC_PHASE_START)
-
-        # Create Pillow Image Object, abort if impossible.
-        if not self.__convert_image_bytes_to_pillow(): return
-
-        # Correct image orientation based on EXIF data if possible and needed.
+        # Corrects image orientation based on EXIF data if possible and needed.
         exif = eu.get_exif_data(self.img_pillow)
         if isinstance(exif, dict) and 'Orientation' in exif and isinstance(exif['Orientation'], int):
             self.__rotate_image_if_needed(exif['Orientation'])
         else:
             self.log(self.rsc.PRE_PROC_NO_EXIF_ORIENTATION)
 
-        # Update image metadata instance variables.
+        # Updates image metadata instance variables.
         self.__update_meta_data()
 
-        # Flag and log pre-processing status as successful (true).
-        self.status = True
-        self.log(self.rsc.PRE_PROC_SUCCESSFUL)
-
-        # Stop pre-processing time counter.
-        self.stop_metrics('Pre-processing')
+        # Procedure successful
+        return True
 
     def __convert_image_bytes_to_pillow(self) -> bool:
         """
-        Attempts to convert provided image in bytes form to business logic required Pillow format.
+        Attempts to convert provided image in bytes form to business logic required Pillow Image format.
         :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
 
@@ -85,6 +72,7 @@ class ImagePreProcessing(APIPhase):
             self.failed_return_object = self.get_failed_return_object(error_response, {}, self.get_metrics())
             return False
 
+        # Successfully built Pillow Image object, log and return.
         self.log(self.rsc.PRE_PROC_CREATED_PILLOW_OBJECT)
         return True
 
@@ -109,15 +97,15 @@ class ImagePreProcessing(APIPhase):
 
         # Consolidates rotation into memory, abort if unsuccessful.
         try:
-            bytesIO = io.BytesIO()
-            new_image.save(bytesIO, format=self.img_meta_data['type'])
+            bytes_io = io.BytesIO()
+            new_image.save(bytes_io, format=self.img_meta_data['type'])
         except Exception as e:
             self.log(self.rsc.PRE_PROC_UNABLE_TO_UPDATE_BYTES.format(str(e)))
             return
 
         # Updates instance variables with new values.
         self.img_pillow = new_image
-        self.img_bytes = bytesIO.getvalue()
+        self.img_bytes = bytes_io.getvalue()
 
         # Log successful image rotation.
         self.log(self.rsc.PRE_PROC_SUCCESSFULLY_ROTATED)
