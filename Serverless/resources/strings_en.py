@@ -14,10 +14,15 @@ class Strings:
     PRE_PROC_NO_EXIF_ORIENTATION = 'No EXIF orientation found on image.'
     PRE_PROC_SUCCESSFULLY_ROTATED = 'Successfully updated image bytes with newly rotated image.'
 
-    RECOGNITION_RESPONSE_ACQUIRED = 'Successfully acquired "recognize_celebrities" response.'
+    RECOGNITION_API_CONTACTED = 'Successfully contacted "recognize_celebrities" API.'
+    RECOGNITION_STATUS_SUCCESS = '"recognize_celebrities" API response denotes success.'
     RECOGNITION_DIGESTED_RESPONSE = 'Digested "recognize_celebrities" response: {}'
     RECOGNITION_ORIENTATION_RECOMMENDATION = 'Recommended orientation correction: {}'
     RECOGNITION_ACQUIRED_META_DATA = 'Final image meta data: {}'
+
+    IMAGE_SAVE_API_CONTACTED = 'Saved image to "S3" blob storage API. Response: {}'
+    IMAGE_SAVE_PUBLIC_URL = 'Image will be available at: {}'
+
 
 
 

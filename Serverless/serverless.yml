@@ -24,6 +24,7 @@ provider:
     BASE_NAME: ${self:service}-${self:provider.stage}
     BUCKET_NAME: ${self:provider.environment.BASE_NAME}
     TABLE_NAME: ${self:provider.environment.BASE_NAME}
+    PUBLIC_IMG_BASE_ADDRESS: https://${self:provider.environment.BASE_NAME}.s3.amazonaws.com/
   stage: prod
   region: us-east-1
   memorySize: 1024

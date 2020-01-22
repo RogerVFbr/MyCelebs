@@ -1,6 +1,8 @@
+import hashlib
 import random, string
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 from interfaces.models.response_object import ResponseObject
 from utilities.api_metrics import ApiMetrics
@@ -133,7 +135,7 @@ class APIPhase(ABC):
 
         # If none has been provided, return a new one.
         else:
-            return ''.join(random.choice(string.ascii_uppercase) for x in range(6))
+            return datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
 
     def log(self, msg):
         """
@@ -146,8 +148,7 @@ class APIPhase(ABC):
 
     def start_metrics(self, metric):
         """
-        Interface between APIPhase superclass and metrics API, is responsible for initiating the time measurement
-        of a particular stage of the API execution.
+        Initiates time measurement of a particular phase of the API execution.
         :param metric: string. API procedure to be measured.
         :return: void.
         """
@@ -156,18 +157,16 @@ class APIPhase(ABC):
 
     def stop_metrics(self, metric) -> float:
         """
-        Interface between APIPhase superclass and metrics API, is responsible for stopping the time measurement
-        of a particular stage of the API execution.
+        Stops the time measurement of a particular phase of the API execution.
         :param metric: string. API procedure whose measurement is to be stopped..
-        :return: float. Procedure final time measurement.
+        :return: float. Phase final time measurement.
         """
 
         return ApiMetrics.stop(self.invocation_id, metric)
 
     def get_metrics(self) -> dict:
         """
-        Interface between APIPhase superclass and metrics API, is responsible for extracting the final API metrics
-        dictionary.
+        Extracts the final API metrics dictionary.
         :return: dictionary. Contains measured metrics of this particular cloud function invocation.
         """
 

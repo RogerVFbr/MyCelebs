@@ -14,14 +14,14 @@ class RecognizeCelebrity(APIPhase):
         """
         Constructor of the celebrity recognition object, stores provided and locally generated data, runs main object
         procedure.
-        :param img_bytes: string containing pre-processed image in bytes form.
-        :param img_meta_data: dictionary of image extracted meta data.
+        :param img_bytes: pre-processed image in bytes form.
         :param invocation_id: string containing id of current cloud function invocation to be to be used by API metrics.
         """
 
         self.img_bytes = img_bytes              # :str: Client provided image in bytes form.
         self.celebrities = []                   # :list: List of Celebrity objects in dict form built from API response.
         self.orientation_correction = None      # :str: Recognition API orientation recommendation.
+        self.recognition_response = None        # :dict: Celebrity recognition API response.
 
         # Initializes APIPhase superclass parameters and procedures
         super(RecognizeCelebrity, self).__init__(prefix='RE', phase_name='Recognition', invocation_id=invocation_id)
@@ -33,16 +33,36 @@ class RecognizeCelebrity(APIPhase):
         """
 
         # Execute request on celebrity recognition API using given image bytes.
-        response = boto3.client('rekognition').recognize_celebrities(Image={'Bytes': self.img_bytes})
+        if not self.__request_celebrity_recognition(): return False
 
         # Evaluate recognize_celebrities API response status, abort if failed.
-        if not self.__evaluate_response_status(response): return False
+        if not self.__evaluate_response_status(self.recognition_response): return False
 
         # Digest response if available, abort if impossible.
-        if not self.__digest_response(response): return False
+        if not self.__digest_response(self.recognition_response): return False
 
         # Procedure successful
         return True
+
+    def __request_celebrity_recognition(self) -> bool:
+        """
+        Executes request on AWS Celebrity Recognition API.
+        :return: boolean. Value expresses whether procedure has executed successfully or not.
+        """
+
+        # Attempts to contact AWS celebrity recognition service
+        try:
+            self.recognition_response = boto3.client('rekognition').recognize_celebrities(
+                Image={'Bytes': self.img_bytes})
+            self.log(self.rsc.RECOGNITION_API_CONTACTED)
+            return True
+
+        # If unable, fill failed return object and abort.
+        except Exception as e:
+            error_response = self.err.FAILED_REKOGNITION_REQUEST
+            self.log(error_response.aws_log.format(str(e)))
+            self.failed_return_object = self.get_failed_return_object(error_response, {}, self.get_metrics())
+            return False
 
     def __evaluate_response_status(self, response: dict) -> bool:
         """
@@ -60,7 +80,7 @@ class RecognizeCelebrity(APIPhase):
 
         # If HTTPStatusCode is successful (200), return success.
         if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-            self.log(self.rsc.RECOGNITION_RESPONSE_ACQUIRED)
+            self.log(self.rsc.RECOGNITION_STATUS_SUCCESS)
             return True
 
         # If HTTPStatusCode has failed (other than 200), fill up return object and return failure.

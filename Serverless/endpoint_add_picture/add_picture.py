@@ -28,7 +28,7 @@ def add_picture(event, context):
         return rc.failed_return_object
 
     # Save image
-    si = SaveImage(pp.img_bytes, vl.invocation_id)
+    si = SaveImage(pp.img_bytes, pp.img_meta_data['type'], vl.invocation_id)
     if not si.status:
         return si.failed_return_object
 

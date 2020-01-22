@@ -27,6 +27,14 @@ class Errors:
         response_code=0
     )
 
+    FAILED_REKOGNITION_REQUEST = Error(
+        aws_log='ERROR: Unable to unable to contact "recognize_celebrities" API. Error: {}',
+        msg_dev='Unable to contact "recognize_celebrities" API.',
+        msg_user='Unable to complete celebrity recognition.',
+        status_code=400,
+        response_code=0
+    )
+
     UNEXPECTED_REKOGNITION_RESPONSE_STRUCTURE = Error(
         aws_log='ERROR: "recognize_celebrities" response structure might have changed: {}',
         msg_dev='Unexpected "recognize_celebrities" API response structure.',
@@ -37,8 +45,16 @@ class Errors:
 
     FAILED_REKOGNITION_RESPONSE = Error(
         aws_log='ERROR: Unable to acquire successful "recognize_celebrities" response: {}',
-        msg_dev='Unable to contact "recognize_celebrities" API.',
+        msg_dev='Unable to acquire successful response from "recognize_celebrities" API.',
         msg_user='Unable to complete celebrity recognition.',
+        status_code=400,
+        response_code=0
+    )
+
+    UNABLE_TO_CONTACT_BLOB_STORAGE_API = Error(
+        aws_log='ERROR: Unable to unable to contact "S3" blob storage API. Error: {}',
+        msg_dev='Unable to contact "S3" blob storage API.',
+        msg_user='Unable to save image.',
         status_code=400,
         response_code=0
     )
