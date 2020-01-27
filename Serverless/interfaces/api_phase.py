@@ -1,11 +1,8 @@
-import hashlib
-import random, string
-
 from abc import ABC, abstractmethod
 from datetime import datetime
 
 from interfaces.models.response_object import ResponseObject
-from utilities.api_metrics import ApiMetrics
+from services.api_metrics import ApiMetrics
 from resources.environment_variables import EnvironmentVariables
 from resources.errors import Errors
 from resources.models.error import Error
@@ -37,6 +34,8 @@ class APIPhase(ABC):
         self.phase_name = phase_name                     # :str: Current API phase name.
         self.invocation_id = self.get_id(invocation_id)  # :str: Handles execution invocation Id for metrics.
 
+        self.metrics = ApiMetrics                        # :ApiMetrics: Contains metrics measurement module.
+
         super().__init__()                               # Runs ABC abstract class initialization.
         self.__main()                                    # Runs API Phase main procedure.
 
@@ -66,7 +65,7 @@ class APIPhase(ABC):
     @abstractmethod
     def run(self) -> bool:
         """
-        Phase business logic (to be overriden by child phase classes).
+        Phase business logic (to be overridden by child phase classes).
         :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
         pass
@@ -153,7 +152,7 @@ class APIPhase(ABC):
         :return: void.
         """
 
-        ApiMetrics.start(self.invocation_id, metric)
+        self.metrics.start(self.invocation_id, metric)
 
     def stop_metrics(self, metric) -> float:
         """
@@ -162,13 +161,17 @@ class APIPhase(ABC):
         :return: float. Phase final time measurement.
         """
 
-        return ApiMetrics.stop(self.invocation_id, metric)
+        return self.metrics.stop(self.invocation_id, metric)
 
-    def get_metrics(self) -> dict:
+    def get_metrics(self, invocation_id: str = None) -> dict:
         """
         Extracts the final API metrics dictionary.
         :return: dictionary. Contains measured metrics of this particular cloud function invocation.
         """
 
-        return ApiMetrics.get(self.invocation_id)
+        if not invocation_id:
+            return self.metrics.get(self.invocation_id)
+        else:
+            return self.metrics.get(invocation_id)
+
 

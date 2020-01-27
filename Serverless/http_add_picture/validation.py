@@ -5,17 +5,18 @@ from interfaces.api_phase import APIPhase
 
 class Validation(APIPhase):
     """
-    Validation object, responsible for validating, decoding and exposing data retrieved from the client's
+    Validation object class, responsible for validating, decoding and exposing data retrieved from the client's
     sent request object (event dictionary).
     """
 
     def __init__(self, event: dict):
         """
-        Constructor of the Validation object, stores client provided data and executes main validation procedure.
+        Constructor of the Validation object, stores client provided and decoded data.
         :param event: AWS event dictionary.
         """
 
         self.event = event                  # :dict: AWS Event object.
+        self.user_id = None                 # :str: User Id as declared on request payload..
         self.img_name = None                # :str: Client provided name.
         self.img_desc = None                # :str: Client provided image description.
         self.img_b64_str = None             # :str: BASE64 encoded string, containing image in original payload form.
@@ -48,6 +49,7 @@ class Validation(APIPhase):
         # Extracts information from newly acquired request object.
         self.img_name = self.event.get('img_name', 'N.A.').strip()
         self.img_desc = self.event.get('img_desc', 'N.A.').strip()
+        self.user_id = self.event.get('user_id', 'N.A.').strip()
 
         # Checks for existence of BASE64 string and assigns value to instance variable. If unsuccessful, abort.
         img_b64 = self.event.get('image')
@@ -82,4 +84,7 @@ class Validation(APIPhase):
         # Process completed successfully, log and return true.
         self.log(self.rsc.VALIDATION_DECODED_BASE64)
         return True
+
+
+
 

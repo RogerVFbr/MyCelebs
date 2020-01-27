@@ -1,5 +1,5 @@
 from interfaces.api_phase import APIPhase
-from utilities.aws_s3_dao import AWSS3
+from services.aws_s3_dao import AWSS3
 
 
 class SaveImage(APIPhase):
@@ -10,7 +10,7 @@ class SaveImage(APIPhase):
 
     def __init__(self, img_bytes: bytes,  img_ext: str, invocation_id: str):
         """
-        Constructor of the image save object, stores provided and locally generated data, runs main object
+        Constructor of the save image object, stores provided and locally generated data, runs main object
         procedure.
         :param img_bytes: pre-processed image in bytes form.
         :param img_ext: string containing image extension (type).
@@ -18,10 +18,11 @@ class SaveImage(APIPhase):
         """
 
         self.img_bytes = img_bytes                      # :str: Client provided image in bytes form.
-        self.img_name = None                            # :str: Stored image final name.
         self.img_ext = img_ext                          # :str: Image type/extension.
+        self.file_name = None                            # :str: Stored image final name.
+        self.img_size = None                            # :str: Stored image size.
         self.public_url = None                          # :str: Public image url.
-        self.repository = AWSS3(self.env.BUCKET_NAME)   # :AWSS3: File repository
+        self.repository = AWSS3(self.env.BUCKET_NAME)   # :AWSS3: File repository.
 
         # Initializes APIPhase superclass parameters and procedures
         super(SaveImage, self).__init__(prefix='SI', phase_name='Save image', invocation_id=invocation_id)
@@ -32,14 +33,14 @@ class SaveImage(APIPhase):
         :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
 
-        # Build image name
-        self.img_name = f'{self.invocation_id}.{self.img_ext}'
+        # Build stored image name.
+        self.file_name = f'{self.invocation_id}.{self.img_ext}'
 
-        # Execute request on image saving infrastructure using given image bytes, abort if impossible.
+        # Execute request on image saving infrastructure, abort if impossible.
         if not self.__save_image(): return False
 
         # Build public image url
-        self.public_url = f'{self.env.PUBLIC_IMG_BASE_ADDRESS}{self.img_name}'
+        self.public_url = f'{self.env.PUBLIC_IMG_BASE_ADDRESS}{self.file_name}'
         self.log(self.rsc.IMAGE_SAVE_PUBLIC_URL.format(self.public_url))
 
         # Procedure successful
@@ -47,12 +48,12 @@ class SaveImage(APIPhase):
 
     def __save_image(self) -> bool:
         """
-        Attempts to save image on AWS S3 blob storage.
+        Attempts to save image on blob storage.
         :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
 
         # Attempts to save file to repository
-        status, response = self.repository.save_file(self.img_bytes, self.img_name)
+        status, response, self.img_size = self.repository.save_file(self.img_bytes, self.file_name)
 
         # If unable to save image, fill up return object and abort.
         if not status:
@@ -62,7 +63,7 @@ class SaveImage(APIPhase):
             return False
 
         # Procedure successful
-        self.log(self.rsc.IMAGE_SAVE_API_CONTACTED.format(response))
+        self.log(self.rsc.IMAGE_SAVE_API_CONTACTED.format(self.img_size, response))
         return True
 
 

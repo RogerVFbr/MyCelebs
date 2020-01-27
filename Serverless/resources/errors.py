@@ -52,9 +52,26 @@ class Errors:
     )
 
     UNABLE_TO_CONTACT_BLOB_STORAGE_API = Error(
-        aws_log='ERROR: Unable to unable to contact "S3" blob storage API. Error: {}',
-        msg_dev='Unable to contact "S3" blob storage API.',
+        aws_log='ERROR: Unable to contact blob storage API. Error: {}',
+        msg_dev='Unable to contact blob storage.',
         msg_user='Unable to save image.',
         status_code=400,
         response_code=0
     )
+
+    UNABLE_TO_CONTACT_DATABASE = Error(
+        aws_log='ERROR: Unable to contact database API. Error: {}',
+        msg_dev='Unable to contact database',
+        msg_user='Unable to save image.',
+        status_code=400,
+        response_code=0
+    )
+
+    UNABLE_TO_SAVE_DATABASE = Error(
+        aws_log='ERROR: Unable to save to database. Error: {}',
+        msg_dev='Unable to save to database',
+        msg_user='Unable to save image.',
+        status_code=400,
+        response_code=0
+    )
+

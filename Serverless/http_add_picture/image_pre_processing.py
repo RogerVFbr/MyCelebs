@@ -1,8 +1,10 @@
 import io
+
 from PIL import Image
 
+from http_add_picture.models.img_meta_data import ImgMetaData
 from interfaces.api_phase import APIPhase
-from endpoint_add_picture.exif_utilities import ExifUtilities as eu
+from http_add_picture.exif_utilities import ExifUtilities as eu
 
 
 class ImagePreProcessing(APIPhase):
@@ -21,13 +23,13 @@ class ImagePreProcessing(APIPhase):
 
         self.img_bytes = img_bytes           # :bytes: Image in bytes form, product of base64.b64decode().
         self.img_pillow = None               # :Image: Pillow Image object (rotation, exif).
-        self.img_meta_data = {
-            'type': 'N.A.',                  # :str: Image type (JPG, PNG).
-            'size': 'N.A.',                  # :str: Image size in KB.
-            'height': 'N.A.',                # :int: Image height in pixels.
-            'width': 'N.A.',                 # :int: Image width in pixels.
-            'exif': {}                       # :dict: Dictionary containing exif information if available.
-        }
+        self.img_meta_data = ImgMetaData(
+            type='N.A.',                     # :str: Image type (JPG, PNG).
+            size='N.A.',                     # :str: Image size in KB.
+            height=0,                        # :int: Image height in pixels.
+            width=0,                         # :int: Image width in pixels.
+            exif={}                          # :dict: Dictionary containing exif information if available.
+        )
 
         # Initializes APIPhase superclass parameters and procedures
         super(ImagePreProcessing, self).__init__(prefix='PP', phase_name='Pre-processing', invocation_id=invocation_id)
@@ -99,15 +101,15 @@ class ImagePreProcessing(APIPhase):
 
         # Consolidates rotation into memory, abort if unsuccessful.
         try:
-            bytes_io = io.BytesIO()
-            new_image.save(bytes_io, format=self.img_meta_data['type'])
+            self.bytes_io = io.BytesIO()
+            new_image.save(self.bytes_io, format=self.img_pillow.format)
         except Exception as e:
             self.log(self.rsc.PRE_PROC_UNABLE_TO_UPDATE_BYTES.format(str(e)))
             return
 
         # Updates instance variables with new values.
         self.img_pillow = new_image
-        self.img_bytes = bytes_io.getvalue()
+        self.img_bytes = self.bytes_io.getvalue()
 
         # Log successful image rotation.
         self.log(self.rsc.PRE_PROC_SUCCESSFULLY_ROTATED)
@@ -119,27 +121,13 @@ class ImagePreProcessing(APIPhase):
         """
 
         # Extracts metadata from final image.
-        self.img_meta_data['type'] = str(self.img_pillow.format)
-        self.img_meta_data['width'], self.img_meta_data['height'] = self.img_pillow.size
-        self.img_meta_data['size'] = self.__sizeof_fmt(len(self.img_pillow.fp.read()), 'B')
+        self.img_meta_data.type = str(self.img_pillow.format)
+        self.img_meta_data.width, self.img_meta_data.height = self.img_pillow.size
 
         # Updates EXIF data if available.
-        self.img_meta_data['exif'] = eu.get_exif_data(self.img_pillow)
+        self.img_meta_data.exif = eu.get_exif_data(self.img_pillow)
 
         # Logs acquired meta data
-        self.log(self.rsc.RECOGNITION_ACQUIRED_META_DATA.format(str(self.img_meta_data)))
+        self.log(self.rsc.RECOGNITION_ACQUIRED_META_DATA.format(str(self.img_meta_data.__dict__)))
 
-    @staticmethod
-    def __sizeof_fmt(num, suffix='B') -> str:
-        """
-        Formats amount of bytes by order of magnitude.
-        :param num: Number to be processed.
-        :param suffix: Order of magnitude.
-        :return: Formatted string.
-        """
 
-        for unit in ['', ' K', ' M', ' G', ' T', ' P', ' E', ' Z']:
-            if abs(num) < 1024.0:
-                return "%3.1f%s%s" % (num, unit, suffix)
-            num /= 1024.0
-        return "%.1f%s%s" % (num, 'Yi', suffix)

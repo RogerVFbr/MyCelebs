@@ -4,7 +4,7 @@ from PIL import Image
 
 class ExifUtilities:
     """
-    Class encapsulating EXIF extraction methods to be used on a Pillow Image object.
+    Encapsulates EXIF extraction methods to be used on a Pillow Image object.
     """
 
     @staticmethod

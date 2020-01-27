@@ -2,7 +2,7 @@ import boto3, hashlib, copy
 
 from boto3.dynamodb.conditions import Key
 
-from utilities.helpers import Helpers as hl
+from services.helpers import Helpers as hl
 from resources.environment_variables import EnvironmentVariables as ev
 from resources.strings_en import Strings as rsc
 

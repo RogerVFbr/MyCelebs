@@ -9,8 +9,6 @@ provider:
   apiKeys:
     - dev:
       - dev-my-celebs2
-#      - name: dev-my-celebs2
-#        value: dkk6N0ICO31VkEW9w1LCrb5NltNSujEUa9S64HTr
   usagePlan:
     - dev:
         quota:
@@ -23,33 +21,46 @@ provider:
   environment:
     BASE_NAME: ${self:service}-${self:provider.stage}
     BUCKET_NAME: ${self:provider.environment.BASE_NAME}
-    TABLE_NAME: ${self:provider.environment.BASE_NAME}
+    PICTURES_TABLE_NAME: ${self:provider.environment.BASE_NAME}-pictures
+    NEW_ENTRIES_TABLE_NAME: ${self:provider.environment.BASE_NAME}-new-entries
     PUBLIC_IMG_BASE_ADDRESS: https://${self:provider.environment.BASE_NAME}.s3.amazonaws.com/
+    ADD_PICTURE_QUEUE_NAME: ${self:provider.environment.BASE_NAME}-add-pic
+    ADD_PICTURE_QUEUE_URL: https://sqs.${self:provider.region}.amazonaws.com/#{AWS::AccountId}/${self:provider.environment.ADD_PICTURE_QUEUE_NAME}
   stage: prod
   region: us-east-1
   memorySize: 1024
   timeout: 20
   iamRoleStatements:
+
+    - Effect: "Allow"
+      Action:
+        - "sqs:*"
+      Resource: "*"
+
     - Effect: "Allow"
       Action:
         - "s3:*"
       Resource: "*"
+
     - Effect: "Allow"
       Action:
         - "rekognition:*"
       Resource: "*"
+
     - Effect: "Allow"
       Action:
         - "dynamodb:*"
       Resource: "*"
+
     - Effect: "Allow"
       Action:
         - "apigateway:*"
       Resource: "*"
 
 functions:
-  addPicture:
-    handler: endpoint_add_picture/add_picture.add_picture
+
+  add-picture:
+    handler: http_add_picture/add_picture.add_picture
     layers:
       - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:8
     events:
@@ -60,10 +71,28 @@ functions:
           cors: true
           request:
             schema:
-              application/json: ${file(endpoint_add_picture/validation_schema/add_picture_schema.json)}
+              application/json: ${file(http_add_picture/validation_schema/add_picture_schema.json)}
+
+  celeb-recognition:
+    handler: stream_celeb_recognition/celeb_recognition.celeb_recognition
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - AddPictureQueue
+              - Arn
+          batchSize: 1
+#      - stream:
+#          type: dynamodb
+#          arn:
+#            Fn::GetAtt:
+#              - newEntriesTable
+#              - StreamArn
+
 
 resources:
   Resources:
+
     FrontBucket:
       Type: AWS::S3::Bucket
       Properties:
@@ -82,10 +111,16 @@ resources:
               Resource: arn:aws:s3:::${self:provider.environment.BUCKET_NAME}/*
         Bucket:
           Ref: FrontBucket
+
+    AddPictureQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: ${self:provider.environment.ADD_PICTURE_QUEUE_NAME}
+
     picturesTable:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: ${self:provider.environment.TABLE_NAME}
+        TableName: ${self:provider.environment.PICTURES_TABLE_NAME}
         AttributeDefinitions:
           - AttributeName: id
             AttributeType: S
@@ -99,5 +134,29 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
+
+    newEntriesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.NEW_ENTRIES_TABLE_NAME}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: time
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+          - AttributeName: time
+            KeyType: RANGE
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
+
+plugins:
+  - serverless-pseudo-parameters
+
 
 
