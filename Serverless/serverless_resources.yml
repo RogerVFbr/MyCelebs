@@ -1,0 +1,80 @@
+PicturesBucket:
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: ${self:provider.environment.BUCKET_NAME}
+    AccessControl: PublicRead
+PicturesBucketPolicy:
+  Type: 'AWS::S3::BucketPolicy'
+  Properties:
+    PolicyDocument:
+      Statement:
+        - Sid: PublicReadForGetBucketObjects
+          Effect: Allow
+          Principal: '*'
+          Action:
+            - 's3:GetObject'
+          Resource: arn:aws:s3:::${self:provider.environment.BUCKET_NAME}/*
+    Bucket:
+      Ref: PicturesBucket
+
+ThumbnailsBucket:
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: ${self:provider.environment.THUMBNAIL_BUCKET_NAME}
+    AccessControl: PublicRead
+ThumbnailsBucketPolicy:
+  Type: 'AWS::S3::BucketPolicy'
+  Properties:
+    PolicyDocument:
+      Statement:
+        - Sid: PublicReadForGetBucketObjects
+          Effect: Allow
+          Principal: '*'
+          Action:
+            - 's3:GetObject'
+          Resource: arn:aws:s3:::${self:provider.environment.THUMBNAIL_BUCKET_NAME}/*
+    Bucket:
+      Ref: ThumbnailsBucket
+
+AddPictureQueue:
+  Type: "AWS::SQS::Queue"
+  Properties:
+    QueueName: ${self:provider.environment.ADD_PICTURE_QUEUE_NAME}
+
+WebScrapQueue:
+  Type: "AWS::SQS::Queue"
+  Properties:
+    QueueName: ${self:provider.environment.WEB_SCRAP_QUEUE_NAME}
+
+PicturesTable:
+  Type: AWS::DynamoDB::Table
+  Properties:
+    TableName: ${self:provider.environment.PICTURES_TABLE_NAME}
+    AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      - AttributeName: time
+        AttributeType: S
+    KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+      - AttributeName: time
+        KeyType: RANGE
+    BillingMode: PAY_PER_REQUEST
+
+CelebritiesTable:
+  Type: AWS::DynamoDB::Table
+  Properties:
+    TableName: ${self:provider.environment.CELEBRITIES_TABLE_NAME}
+    AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+    KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+    BillingMode: PAY_PER_REQUEST
+
+
+
+
+

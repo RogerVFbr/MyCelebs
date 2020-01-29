@@ -5,8 +5,9 @@ import boto3
 
 class AWSSQS:
 
-    def __init__(self, queue_url: str):
-        self.queue_url = queue_url
+    def __init__(self, queue_base_url: str, queue_name: str):
+        account_id = boto3.client('sts').get_caller_identity().get('Account')
+        self.queue_url = f'{queue_base_url}{account_id}/{queue_name}'
         self.client = boto3.client('sqs')
 
     def evaluate_conditions_and_requirements(self):

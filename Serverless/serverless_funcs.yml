@@ -1,0 +1,36 @@
+add-picture:
+  handler: http_add_picture/handler.add_picture
+  layers:
+    - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:8
+  events:
+    - http:
+        path: add_picture
+        method: POST
+        private: true
+        cors: true
+        request:
+          schema:
+            application/json: ${file(http_add_picture/validation_schema/add_picture_schema.json)}
+
+celeb-recognition:
+  handler: sqs_celebrity_recognition/handler.celeb_recognition
+  events:
+    - sqs:
+        arn:
+          Fn::GetAtt:
+            - AddPictureQueue
+            - Arn
+        batchSize: 1
+
+generate-thumbnail:
+  handler: s3_generate_thumbnail/handler.generate_thumbnail
+  events:
+    - s3:
+        bucket: ${self:provider.environment.BUCKET_NAME}
+        event: s3:ObjectCreated:*
+        existing: true
+
+
+
+
+

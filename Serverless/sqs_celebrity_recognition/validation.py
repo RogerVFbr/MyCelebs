@@ -1,4 +1,3 @@
-import base64
 import json
 
 from interfaces.api_phase import APIPhase
@@ -6,7 +5,8 @@ from interfaces.api_phase import APIPhase
 
 class Validation(APIPhase):
     """
-
+    Validation object class, responsible for validating and exposing data retrieved from a cloud queue
+    service (event dictionary).
     """
 
     def __init__(self, event: dict):
@@ -15,11 +15,11 @@ class Validation(APIPhase):
         :param event: AWS event dictionary.
         """
 
-        self.event = event                  # :dict: AWS Event object.
-        self.log_id = None
-        self.bucket_name = self.env.BUCKET_NAME
-        self.file_name = None
-        self.new_entry = {}
+        self.event = event                          # :dict: AWS Event object.
+        self.log_id = None                          # :str: Queue receipt handle (log identifier) for later deletion.
+        self.bucket_name = self.env.BUCKET_NAME     # :str: Image storage bucket name.
+        self.file_name = None                       # :str: Image stored file name.
+        self.new_entry = {}                         # :dict: Acquired log data.
 
         # Initializes APIPhase superclass parameters and procedures
         super(Validation, self).__init__(prefix='VL', phase_name='Validation')

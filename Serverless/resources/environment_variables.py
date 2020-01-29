@@ -7,11 +7,14 @@ class EnvironmentVariables:
 
     BASE_NAME = __env_var.get('BASE_NAME')
     BUCKET_NAME = __env_var.get('BUCKET_NAME')
+    THUMBNAIL_BUCKET_NAME = __env_var.get('THUMBNAIL_BUCKET_NAME')
     PICTURES_TABLE_NAME = __env_var.get('PICTURES_TABLE_NAME')
-    NEW_ENTRIES_TABLE_NAME = __env_var.get('NEW_ENTRIES_TABLE_NAME')
+    CELEBRITIES_TABLE_NAME = __env_var.get('CELEBRITIES_TABLE_NAME')
     PUBLIC_IMG_BASE_ADDRESS = __env_var.get('PUBLIC_IMG_BASE_ADDRESS')
+    PUBLIC_THUMBNAIL_BASE_ADDRESS = __env_var.get('PUBLIC_THUMBNAIL_BASE_ADDRESS')
     ADD_PICTURE_QUEUE_NAME = __env_var.get('ADD_PICTURE_QUEUE_NAME')
-    ADD_PICTURE_QUEUE_URL = __env_var.get('ADD_PICTURE_QUEUE_URL')
+    WEB_SCRAP_QUEUE_NAME = __env_var.get('WEB_SCRAP_QUEUE_NAME')
+    QUEUE_BASE_URL = __env_var.get('QUEUE_BASE_URL')
 
     @classmethod
     def get(cls, env_var):

@@ -6,9 +6,11 @@ provider:
   versionFunctions: false
   tracing:
     lambda: true
+
   apiKeys:
     - dev:
       - dev-my-celebs2
+
   usagePlan:
     - dev:
         quota:
@@ -18,145 +20,22 @@ provider:
         throttle:
           burstLimit: 2000
           rateLimit: 1000
-  environment:
-    BASE_NAME: ${self:service}-${self:provider.stage}
-    BUCKET_NAME: ${self:provider.environment.BASE_NAME}
-    PICTURES_TABLE_NAME: ${self:provider.environment.BASE_NAME}-pictures
-    NEW_ENTRIES_TABLE_NAME: ${self:provider.environment.BASE_NAME}-new-entries
-    PUBLIC_IMG_BASE_ADDRESS: https://${self:provider.environment.BASE_NAME}.s3.amazonaws.com/
-    ADD_PICTURE_QUEUE_NAME: ${self:provider.environment.BASE_NAME}-add-pic
-    ADD_PICTURE_QUEUE_URL: https://sqs.${self:provider.region}.amazonaws.com/#{AWS::AccountId}/${self:provider.environment.ADD_PICTURE_QUEUE_NAME}
+
+  environment: ${file(serverless_environment.yml)}
+
   stage: prod
   region: us-east-1
   memorySize: 1024
-  timeout: 20
-  iamRoleStatements:
+  timeout: 5
 
-    - Effect: "Allow"
-      Action:
-        - "sqs:*"
-      Resource: "*"
+  iamRoleStatements: ${file(serverless_role_statements.yml)}
 
-    - Effect: "Allow"
-      Action:
-        - "s3:*"
-      Resource: "*"
-
-    - Effect: "Allow"
-      Action:
-        - "rekognition:*"
-      Resource: "*"
-
-    - Effect: "Allow"
-      Action:
-        - "dynamodb:*"
-      Resource: "*"
-
-    - Effect: "Allow"
-      Action:
-        - "apigateway:*"
-      Resource: "*"
-
-functions:
-
-  add-picture:
-    handler: http_add_picture/add_picture.add_picture
-    layers:
-      - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:8
-    events:
-      - http:
-          path: add_picture
-          method: POST
-          private: true
-          cors: true
-          request:
-            schema:
-              application/json: ${file(http_add_picture/validation_schema/add_picture_schema.json)}
-
-  celeb-recognition:
-    handler: stream_celeb_recognition/celeb_recognition.celeb_recognition
-    events:
-      - sqs:
-          arn:
-            Fn::GetAtt:
-              - AddPictureQueue
-              - Arn
-          batchSize: 1
-#      - stream:
-#          type: dynamodb
-#          arn:
-#            Fn::GetAtt:
-#              - newEntriesTable
-#              - StreamArn
-
+functions: ${file(serverless_funcs.yml)}
 
 resources:
-  Resources:
+  Resources: ${file(serverless_resources.yml)}
 
-    FrontBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:provider.environment.BUCKET_NAME}
-        AccessControl: PublicRead
-    BucketPolicy:
-      Type: 'AWS::S3::BucketPolicy'
-      Properties:
-        PolicyDocument:
-          Statement:
-            - Sid: PublicReadForGetBucketObjects
-              Effect: Allow
-              Principal: '*'
-              Action:
-                - 's3:GetObject'
-              Resource: arn:aws:s3:::${self:provider.environment.BUCKET_NAME}/*
-        Bucket:
-          Ref: FrontBucket
 
-    AddPictureQueue:
-      Type: "AWS::SQS::Queue"
-      Properties:
-        QueueName: ${self:provider.environment.ADD_PICTURE_QUEUE_NAME}
-
-    picturesTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:provider.environment.PICTURES_TABLE_NAME}
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-          - AttributeName: time
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-          - AttributeName: time
-            KeyType: RANGE
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
-
-    newEntriesTable:
-      Type: AWS::DynamoDB::Table
-      Properties:
-        TableName: ${self:provider.environment.NEW_ENTRIES_TABLE_NAME}
-        AttributeDefinitions:
-          - AttributeName: id
-            AttributeType: S
-          - AttributeName: time
-            AttributeType: S
-        KeySchema:
-          - AttributeName: id
-            KeyType: HASH
-          - AttributeName: time
-            KeyType: RANGE
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
-        StreamSpecification:
-          StreamViewType: NEW_IMAGE
-
-plugins:
-  - serverless-pseudo-parameters
 
 
 

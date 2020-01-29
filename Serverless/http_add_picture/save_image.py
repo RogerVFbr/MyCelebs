@@ -19,9 +19,10 @@ class SaveImage(APIPhase):
 
         self.img_bytes = img_bytes                      # :str: Client provided image in bytes form.
         self.img_ext = img_ext                          # :str: Image type/extension.
-        self.file_name = None                            # :str: Stored image final name.
+        self.file_name = None                           # :str: Stored image final name.
         self.img_size = None                            # :str: Stored image size.
-        self.public_url = None                          # :str: Public image url.
+        self.img_url = None                             # :str: Public image url.
+        self.img_thumbnail_url = None                   # :str: Public thumbnail url.
         self.repository = AWSS3(self.env.BUCKET_NAME)   # :AWSS3: File repository.
 
         # Initializes APIPhase superclass parameters and procedures
@@ -29,7 +30,7 @@ class SaveImage(APIPhase):
 
     def run(self) -> bool:
         """
-        Object's main procedure: executes image saving DAO and evaluates response.
+        Object's main procedure: executes image saving repository procedure and evaluates response.
         :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
 
@@ -40,15 +41,16 @@ class SaveImage(APIPhase):
         if not self.__save_image(): return False
 
         # Build public image url
-        self.public_url = f'{self.env.PUBLIC_IMG_BASE_ADDRESS}{self.file_name}'
-        self.log(self.rsc.IMAGE_SAVE_PUBLIC_URL.format(self.public_url))
+        self.img_url = f'{self.env.PUBLIC_IMG_BASE_ADDRESS}{self.file_name}'
+        self.img_thumbnail_url = f'{self.env.PUBLIC_THUMBNAIL_BASE_ADDRESS}{self.file_name}'
+        self.log(self.rsc.IMAGE_SAVE_PUBLIC_URL.format(self.img_url))
 
         # Procedure successful
         return True
 
     def __save_image(self) -> bool:
         """
-        Attempts to save image on blob storage.
+        Attempts to save image on repository.
         :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
 

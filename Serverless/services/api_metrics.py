@@ -1,3 +1,4 @@
+import copy
 import time
 
 
@@ -62,6 +63,19 @@ class ApiMetrics:
                 metrics[k] = v['time']
         del cls.__counters[invocation_id]
         return metrics
+
+    @classmethod
+    def get_snapshot(cls,  invocation_id):
+        """
+        Returns a finished metrics dictionary of a particular cloud function invocation containing only finalized
+        measurements. Ongoing ones will be ignored.
+        :param invocation_id: string. Cloud function invocation Id.
+        :return: dictionary. Summary of all invocation measurements.
+        """
+
+        # Iterates on measurement dictionary selecting finalized entries.
+        source = copy.copy(cls.__counters[invocation_id])
+        return {k: v for k, v in source.items() if not v.get('counting')}
 
     @staticmethod
     def __get_time_diff(ref):

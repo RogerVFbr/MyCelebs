@@ -1,4 +1,5 @@
 import boto3
+from boto3.dynamodb.conditions import Key
 
 
 class AWSDynamoDB:
@@ -50,6 +51,28 @@ class AWSDynamoDB:
         http_status_code = response.get('ResponseMetadata', {}).get('HTTPStatusCode')
         if not http_status_code or http_status_code != 200:
             raise Exception(f'Bad status code: {http_status_code}')
+
+    def delete_by_hash(self, user_id):
+        table = boto3.resource('dynamodb').Table(self.table_name)
+        items = table.query(KeyConditionExpression=Key('userId').eq(user_id))
+        keys = [{'hash': x.get('userId'), 'range': x.get('time')} for x in items.get('Items')]
+        print(f"DAO - Deleting from dynamo querried {len(keys)} item(s) under hash key '{user_id}': {str(keys)}")
+        print(f"DAO - Deleting querried items...")
+
+        for entry in keys:
+            try:
+                response = table.delete_item(
+                    Key={
+                        'userId': entry.get('hash'),
+                        'time': entry.get('range'),
+                    }
+                )
+                print(f"DAO - Successfully deleted HASH '{entry.get('hash')}' | RANGE '{entry.get('range')}'. "
+                      f"Response: {response.get('ResponseMetadata')}")
+            except Exception as e:
+                print('DAO - Error: unable to delete item from DynamoDB: ' + str(e))
+                return False
+        return True
 
     @classmethod
     def __convert_structure_to_dynamo_compatible(cls, data):

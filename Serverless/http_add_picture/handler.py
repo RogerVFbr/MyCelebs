@@ -33,9 +33,11 @@ def add_picture(event, context):
         'id': vl.user_id,
         'time': vl.invocation_id,
         'file_name': si.file_name,
+        'api_metrics': {'add_picture': si.get_metrics_snapshot()},
         'img_name': vl.img_name,
         'img_desc': vl.img_desc,
-        'img_url': si.public_url,
+        'img_url': si.img_url,
+        'img_thumbnail_url': si.img_thumbnail_url,
         'img_meta_data': {
             'type': pp.img_meta_data.type,
             'size': si.img_size,

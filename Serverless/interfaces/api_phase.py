@@ -33,7 +33,6 @@ class APIPhase(ABC):
         self.prefix = prefix                             # :str: Current API phase prefix for logging.
         self.phase_name = phase_name                     # :str: Current API phase name.
         self.invocation_id = self.get_id(invocation_id)  # :str: Handles execution invocation Id for metrics.
-
         self.metrics = ApiMetrics                        # :ApiMetrics: Contains metrics measurement module.
 
         super().__init__()                               # Runs ABC abstract class initialization.
@@ -173,5 +172,16 @@ class APIPhase(ABC):
             return self.metrics.get(self.invocation_id)
         else:
             return self.metrics.get(invocation_id)
+
+    def get_metrics_snapshot(self, invocation_id: str = None) -> dict:
+        """
+        Extracts current API metrics dictionary.
+        :return: dictionary. Contains measured metrics of this particular cloud function invocation.
+        """
+
+        if not invocation_id:
+            return self.metrics.get_snapshot(self.invocation_id)
+        else:
+            return self.metrics.get_snapshot(invocation_id)
 
 

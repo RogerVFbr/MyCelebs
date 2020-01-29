@@ -1,0 +1,15 @@
+BASE_NAME: ${self:service}-${self:provider.stage}
+
+BUCKET_NAME: ${self:provider.environment.BASE_NAME}-pictures
+THUMBNAIL_BUCKET_NAME: ${self:provider.environment.BASE_NAME}-thumbnails
+
+PICTURES_TABLE_NAME: ${self:provider.environment.BASE_NAME}-pictures
+CELEBRITIES_TABLE_NAME: ${self:provider.environment.BASE_NAME}-celebrities
+
+PUBLIC_IMG_BASE_ADDRESS: https://${self:provider.environment.BUCKET_NAME}.s3.amazonaws.com/
+PUBLIC_THUMBNAIL_BASE_ADDRESS: https://${self:provider.environment.THUMBNAIL_BUCKET_NAME}.s3.amazonaws.com/
+
+QUEUE_BASE_URL: https://sqs.${self:provider.region}.amazonaws.com/
+ADD_PICTURE_QUEUE_NAME: ${self:provider.environment.BASE_NAME}-add-pic
+WEB_SCRAP_QUEUE_NAME: ${self:provider.environment.BASE_NAME}-web_scrap
+
