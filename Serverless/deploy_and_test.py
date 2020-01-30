@@ -51,15 +51,15 @@ class DeployAndTest:
         if UPDATE_MAIN_BRANCH:
             self.execute_and_log(f'git push origin {self.MAIN_WORKING_BRANCH}',
                                  f"Executing GIT push to '{self.MAIN_WORKING_BRANCH}' branch...")
-
-        self.execute_and_log(f'git checkout -b {self.AUTO_SAVE_BRANCH}',
-                             f'Creating local auto-backup branch "{self.AUTO_SAVE_BRANCH}"...')
-        self.execute_and_log(f'git push origin {self.AUTO_SAVE_BRANCH}',
-                             f"Pushing to remote auto-backup branch...")
-        self.execute_and_log(f'git checkout {self.MAIN_WORKING_BRANCH}',
-                             f"Switching back to local main branch '{self.MAIN_WORKING_BRANCH}'...")
-        self.execute_and_log(f'git branch -D {self.AUTO_SAVE_BRANCH}',
-                             f"Deleting local auto-backup branch...")
+        else:
+            self.execute_and_log(f'git checkout -b {self.AUTO_SAVE_BRANCH}',
+                                 f'Creating local auto-backup branch "{self.AUTO_SAVE_BRANCH}"...')
+            self.execute_and_log(f'git push origin {self.AUTO_SAVE_BRANCH}',
+                                 f"Pushing to remote auto-backup branch...")
+            self.execute_and_log(f'git checkout {self.MAIN_WORKING_BRANCH}',
+                                 f"Switching back to local main branch '{self.MAIN_WORKING_BRANCH}'...")
+            self.execute_and_log(f'git branch -D {self.AUTO_SAVE_BRANCH}',
+                                 f"Deleting local auto-backup branch...")
 
         # Testing procedures
         if TEST_FUNCTIONS:
