@@ -35,7 +35,7 @@ class DeployAndTest:
 
         # Testing procedures
         self.print_header('TESTING PROCEDURES', header_size)
-        self.execute_and_log('sls invoke -f add-picture -l --raw "{}"'.format(str(config['mocks']['KateMossSmall'])),
+        self.execute_and_log('sls invoke -f add-picture -l --data "{}"'.format(str(config['mocks']['KateMossSmall'])),
                              'Testing add-picture function...')
 
     def execute_and_log(self, execute, log):
