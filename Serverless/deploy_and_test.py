@@ -28,6 +28,7 @@ def main():
     execute_and_log('git status', 'Present GIT status...')
     execute_and_log('git add .', 'Execute GIT add all...')
     execute_and_log(f'git commit -m "{commit_msg}"', f"Commiting with message: {commit_msg}...")
+    execute_and_log(f'git push origin master', f"Executing GIT push to master branch...")
 
 
 
