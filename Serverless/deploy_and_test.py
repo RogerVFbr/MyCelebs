@@ -5,7 +5,7 @@ from datetime import datetime
 FULL_DEPLOY = False
 FUNCTIONS_TO_DEPLOY = ['add-picture']
 
-UPDATE_MASTER_BRANCH = False
+UPDATE_MASTER_BRANCH = True
 GIT_COMMIT_MESSAGE = 'Current updates'
 
 TEST_FUNCTIONS = False
@@ -69,8 +69,6 @@ class DeployAndTest:
 
             self.execute_and_log(f'git push origin {self.AUTO_SAVE_REPO_NAME}',
                             f"Executing GIT push to auto-backup branch (git push origin {self.AUTO_SAVE_REPO_NAME})...")
-
-            self.execute_and_log('git status', 'Present GIT status (git status)...')
 
 
 
