@@ -31,48 +31,35 @@ class DeployAndTest:
         with open(self.CONFIG_FILE_PATH) as json_file:
             self.project_path = json.load(json_file)['project_paths']['home']
 
-        # Prepare execution
-
         # Deploy service
-        # self.print_header('SERVICE DEPLOYMENT', self.HEADER_SIZE)
-        # if FULL_DEPLOY:
-        #     self.execute_and_log('sls deploy', 'Deploy full service (sls deploy)...')
-        # else:
-        #     for function_name in FUNCTIONS_TO_DEPLOY:
-        #         self.execute_and_log(f'sls deploy function --function {function_name}',
-        #                              f"Deploy single function: '{function_name}' "
-        #                              f"(sls deploy function --function <function_name>)")
+        self.print_header('SERVICE DEPLOYMENT', self.HEADER_SIZE)
+        if FULL_DEPLOY:
+            self.execute_and_log('sls deploy', 'Deploy full service (sls deploy)...')
+        else:
+            for function_name in FUNCTIONS_TO_DEPLOY:
+                self.execute_and_log(f'sls deploy function --function {function_name}',
+                                     f"Deploy single function: '{function_name}' "
+                                     f"(sls deploy function --function <function_name>)")
 
         # Git procedures
         self.print_header('UPDATE REPOSITORY', self.HEADER_SIZE)
-        self.execute_and_log('git branch', 'Present GIT branches (git status)...')
-        self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
+        self.execute_and_log('git branch', 'Present current GIT branches...')
+        self.execute_and_log('git add .', 'Execute GIT add all...')
         self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
-                             f"Committing with message: '{GIT_COMMIT_MESSAGE}' (git commit -m <message>)...")
+                             f"Committing with message: '{GIT_COMMIT_MESSAGE}'...")
 
         if UPDATE_MAIN_BRANCH:
             self.execute_and_log(f'git push origin {self.MAIN_WORKING_BRANCH}',
-                                 f"Executing GIT push to '{self.MAIN_WORKING_BRANCH}' "
-                                 f"branch (git push origin {self.MAIN_WORKING_BRANCH})...")
+                                 f"Executing GIT push to '{self.MAIN_WORKING_BRANCH}' branch...")
 
         self.execute_and_log(f'git checkout -b {self.AUTO_SAVE_BRANCH}',
                              f'Creating local auto-backup branch "{self.AUTO_SAVE_BRANCH}"...')
-
         self.execute_and_log(f'git push origin {self.AUTO_SAVE_BRANCH}',
-                             f"Pushing to remote auto-backup branch (git push origin {self.AUTO_SAVE_BRANCH})...")
-
+                             f"Pushing to remote auto-backup branch...")
         self.execute_and_log(f'git checkout {self.MAIN_WORKING_BRANCH}',
-                             f'Switching back to local {self.MAIN_WORKING_BRANCH}...')
-
+                             f"Switching back to local main branch '{self.MAIN_WORKING_BRANCH}'...")
         self.execute_and_log(f'git branch -D {self.AUTO_SAVE_BRANCH}',
-                             f"Deleting local auto-backup branch (git push origin {self.AUTO_SAVE_BRANCH})...")
-
-
-
-
-
-
-
+                             f"Deleting local auto-backup branch...")
 
         # Testing procedures
         if TEST_FUNCTIONS:
