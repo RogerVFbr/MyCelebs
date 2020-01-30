@@ -34,18 +34,18 @@ class DeployAndTest:
         # Prepare execution
 
         # Deploy service
-        self.print_header('SERVICE DEPLOYMENT', self.HEADER_SIZE)
-        if FULL_DEPLOY:
-            self.execute_and_log('sls deploy', 'Deploy full service (sls deploy)...')
-        else:
-            for function_name in FUNCTIONS_TO_DEPLOY:
-                self.execute_and_log(f'sls deploy function --function {function_name}',
-                                     f"Deploy single function: '{function_name}' "
-                                     f"(sls deploy function --function <function_name>)")
+        # self.print_header('SERVICE DEPLOYMENT', self.HEADER_SIZE)
+        # if FULL_DEPLOY:
+        #     self.execute_and_log('sls deploy', 'Deploy full service (sls deploy)...')
+        # else:
+        #     for function_name in FUNCTIONS_TO_DEPLOY:
+        #         self.execute_and_log(f'sls deploy function --function {function_name}',
+        #                              f"Deploy single function: '{function_name}' "
+        #                              f"(sls deploy function --function <function_name>)")
 
         # Git procedures
         self.print_header('UPDATE REPOSITORY', self.HEADER_SIZE)
-        self.execute_and_log('git status', 'Present GIT status (git status)...')
+        self.execute_and_log('git branch', 'Present GIT branches (git status)...')
         self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
         self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
                              f"Commiting with message: {GIT_COMMIT_MESSAGE} (git commit -m <message>)...")
