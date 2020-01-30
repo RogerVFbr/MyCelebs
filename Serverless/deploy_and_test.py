@@ -48,12 +48,16 @@ class DeployAndTest:
     def execute_and_log(self, execute, log):
         print(f'\u001b[33m{log}\x1b[0m')
         # os.system(execute)
-        # p = subprocess.Popen([execute.split()], stdout=subprocess.PIPE, cwd=self.project_path)
+        p = subprocess.Popen(execute, shell=True, stdout=subprocess.PIPE, cwd=self.project_path)
+        for line in iter(p.stdout.readline, b''):
+            print(line)
+        p.stdout.close()
+        p.wait()
         # p.stdout.read()
         # print(p.stdout.read())
 
-        p = subprocess.run(execute, shell=True, capture_output=True)
-        print(type(p.stdout))
+        # p = subprocess.run(execute, shell=True, capture_output=True)
+        # print(type(p.stdout))
 
 
     @staticmethod
