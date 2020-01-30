@@ -1,6 +1,8 @@
 import os
 import json
 import subprocess
+import sys
+
 
 class DeployAndTest:
 
@@ -48,10 +50,11 @@ class DeployAndTest:
     def execute_and_log(self, execute, log):
         print(f'\u001b[33m{log}\x1b[0m')
         # os.system(execute)
-        p = subprocess.Popen(execute, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        p = subprocess.Popen(execute, close_fds=True, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         while p.poll() is None:
-            line = p.stdout.readline()
-            print("Print:" + line)
+            out = p.stdout.read(1)
+            sys.stdout.write(out.decode("utf-8"))
+            sys.stdout.flush()
         # for line in iter(p.stdout.readline, b''):
         #     print(line)
         # p.stdout.close()
