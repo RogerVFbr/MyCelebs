@@ -71,7 +71,8 @@ class DeployAndTest:
         for line in iter(p.stdout.readline, b''):
             print(line.decode("utf-8").replace('\n', ''))
         for line in iter(p.stderr.readline, b''):
-            print(line.decode("utf-8").replace('\n', ''))
+            # print(line.decode("utf-8").replace('\n', ''))
+            pass
         p.stdout.close()
         p.wait()
         # p.stdout.read()
