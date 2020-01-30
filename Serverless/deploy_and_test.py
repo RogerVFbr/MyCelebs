@@ -12,18 +12,18 @@ class DeployAndTest:
         with open('tests/config.json') as json_file:
             config = json.load(json_file)
             print(f'Parsing configurations: {config}')
+            self.project_path = config['project_paths']['home']
 
         # Prepare execution
-        self.project_path = config['project_paths']['home']
-        # os.chdir(project_path)
-        os.path.dirname(os.path.realpath(__file__))
+        # os.path.dirname(os.path.realpath(__file__))
         header_size = 60
 
         # Deploy service
         self.print_header('SERVICE DEPLOYMENT', header_size)
         # execute_and_log('sls deploy', 'Deploy full service...')
         function_name = 'add-picture'
-        self.execute_and_log(f'sls deploy function --function {function_name}', f"Deploy single function: '{function_name}'")
+        self.execute_and_log(f'sls deploy function --function '
+                             f'{function_name}', f"Deploy single function: '{function_name}'")
 
         # Git procedures
         self.print_header('UPDATE REPOSITORY', header_size)
@@ -65,6 +65,7 @@ class DeployAndTest:
         lower_line = ' \\' + "".join(['=' for x in range(len(main)-4)]) + '/'
         print(f'{color}{upper_line}\n{main}\n{lower_line}{default}')
         print('')
+
 
 if __name__ == "__main__":
     dt = DeployAndTest()
