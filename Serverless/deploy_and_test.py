@@ -35,7 +35,7 @@ class DeployAndTest:
         self.execute_and_log(f'git push origin master', f"Executing GIT push to master branch...")
 
         # Testing procedures
-        # execute_and_log('sls invoke -f add-picture -l', 'Testing add-picture function...')
+        self.execute_and_log('sls invoke -f add-picture -l', 'Testing add-picture function...')
 
 
 
@@ -49,37 +49,15 @@ class DeployAndTest:
 
     def execute_and_log(self, execute, log):
         print(f'\u001b[33m{log}\x1b[0m')
-        # os.system(execute)
         p = subprocess.Popen(execute, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        # while True:
-        #     output = p.stdout.readline()
-        #     if output == '' and p.poll() is not None:
-        #         break
-        #     if output:
-        #         print(output.strip())
-        # rc = p.poll()
-        # print(rc)
-        # print(p.communicate()[0].decode("utf-8"))
-        # print(p.communicate()[1].decode("utf-8"))
-        # print(p.communicate())
-        # while p.poll() is None:
-        #     out = p.stdout.read(1)
-        #     sys.stdout.write(out.decode("utf-8"))
-        #     sys.stdout.flush()
-        # p.stdout.close()
-        # p.wait()
         for line in iter(p.stdout.readline, b''):
             print(line.decode("utf-8").replace('\n', ''))
         for line in iter(p.stderr.readline, b''):
-            # print(line.decode("utf-8").replace('\n', ''))
+            print(line.decode("utf-8").replace('\n', ''))
             pass
         p.stdout.close()
         p.wait()
-        # p.stdout.read()
-        # print(p.stdout.read())
 
-        # p = subprocess.run(execute, shell=True, capture_output=True)
-        # print(type(p.stdout))
 
 
     @staticmethod
