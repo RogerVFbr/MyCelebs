@@ -8,7 +8,7 @@ FUNCTIONS_TO_DEPLOY = ['add-picture']
 UPDATE_MAIN_BRANCH = False
 GIT_COMMIT_MESSAGE = 'Latest updates'
 
-TEST_FUNCTIONS = False
+TEST_FUNCTIONS = True
 LOG_TEST_DETAILS = False
 FUNCTIONS_TO_TEST = [
     ('add-picture', 'tests/mock_add_picture_a.json'),
