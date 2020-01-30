@@ -9,7 +9,7 @@ class DeployAndTest:
 
     def __init__(self):
         # Read config JSON
-        with open('deploy_and_test_config.json') as json_file:
+        with open('tests/config.json') as json_file:
             config = json.load(json_file)
             print(f'Parsing configurations: {config}')
 
