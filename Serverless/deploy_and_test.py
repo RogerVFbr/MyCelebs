@@ -32,7 +32,7 @@ class DeployAndTest:
             self.project_path = json.load(json_file)['project_paths']['home']
 
         # Deploy service
-        self.print_header('SERVICE DEPLOYMENT', self.HEADER_SIZE)
+        self.print_header('SERVICE DEPLOYMENT')
         if FULL_DEPLOY:
             self.execute_and_log('sls deploy', 'Deploy full service (sls deploy)...')
         else:
@@ -42,7 +42,7 @@ class DeployAndTest:
                                      f"(sls deploy function --function <function_name>)")
 
         # Git procedures
-        self.print_header('UPDATE REPOSITORY', self.HEADER_SIZE)
+        self.print_header('UPDATE REPOSITORY')
         self.execute_and_log('git branch', 'Present current GIT branches...')
         self.execute_and_log('git add .', 'Execute GIT add all...')
         self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
@@ -63,7 +63,7 @@ class DeployAndTest:
 
         # Testing procedures
         if TEST_FUNCTIONS:
-            self.print_header('TESTING PROCEDURES', self.HEADER_SIZE)
+            self.print_header('TESTING PROCEDURES')
             for test in FUNCTIONS_TO_TEST:
                 name = test[0]
                 params = ''
@@ -101,8 +101,8 @@ class DeployAndTest:
         p.wait()
         return logs
 
-    @staticmethod
-    def print_header(content, size):
+    @classmethod
+    def print_header(cls, content):
         """
         Prints main header on log screen.
         :param content (string): Text to be displayed on main header.
@@ -110,6 +110,7 @@ class DeployAndTest:
         :return: None
         """
         color, default = '\u001b[35m', '\u001b[0m'
+        size = cls.HEADER_SIZE
         print('')
         main = '{' + "".join([' ' for x in range(int(size/2)-int((len(content)/2)))]) + content
         main += "".join([' ' for x in range(size-len(main))]) + '}'
