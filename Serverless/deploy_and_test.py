@@ -55,6 +55,8 @@ class DeployAndTest:
             out = p.stdout.read(1)
             sys.stdout.write(out.decode("utf-8"))
             sys.stdout.flush()
+        p.stdout.close()
+        p.wait()
         # for line in iter(p.stdout.readline, b''):
         #     print(line)
         # p.stdout.close()
