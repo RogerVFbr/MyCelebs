@@ -35,17 +35,8 @@ class DeployAndTest:
         self.execute_and_log(f'git push origin master', f"Executing GIT push to master branch...")
 
         # Testing procedures
+        self.print_header('TESTING PROCEDURES', header_size)
         self.execute_and_log('sls invoke -f add-picture -l', 'Testing add-picture function...')
-
-
-
-
-        # print('')
-        # print('+-------------------------------------------+')
-        # print('|               REGISTER LOGS               |')
-        # print('+-------------------------------------------+')
-        # print('')
-        # os.system('sls logs -f register')
 
     def execute_and_log(self, execute, log):
         print(f'\u001b[33m{log}\x1b[0m')
@@ -57,8 +48,6 @@ class DeployAndTest:
             pass
         p.stdout.close()
         p.wait()
-
-
 
     @staticmethod
     def print_header(content, size):
