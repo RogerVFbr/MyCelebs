@@ -45,9 +45,9 @@ class DeployAndTest:
 
         # Git procedures
         self.print_header('UPDATE REPOSITORY', self.HEADER_SIZE)
-        self.execute_and_log('git status', 'Present GIT status (git status)...')
         if UPDATE_MASTER_BRANCH:
             self.execute_and_log('git checkout master', 'Selecting master branch (git checkout master)...')
+            self.execute_and_log('git status', 'Present GIT status (git status)...')
             self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
             self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
                                  f"Commiting with message: {GIT_COMMIT_MESSAGE} (git commit -m <message>)...")
@@ -62,6 +62,8 @@ class DeployAndTest:
                                      f'Creating local branch "{self.AUTO_SAVE_REPO_NAME}"...')
             self.execute_and_log(f'git push origin {self.AUTO_SAVE_REPO_NAME}',
                             f"Executing GIT push to auto-backup branch (git push origin {self.AUTO_SAVE_REPO_NAME})...")
+            self.execute_and_log('git status', 'Present GIT status (git status)...')
+
 
 
 
