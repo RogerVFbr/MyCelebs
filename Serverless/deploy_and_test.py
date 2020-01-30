@@ -3,6 +3,7 @@ import json
 
 
 def main():
+    # Read config JSON
     with open('deploy_and_test_config.json') as json_file:
         config = json.load(json_file)
         print(f'Parsing configurations: {config}')
@@ -12,23 +13,22 @@ def main():
     os.chdir(project_path)
     header_size = 60
 
-    # Serverless procedures
-    print_header('SERVERLESS PROCEDURES', header_size)
-
-    # Deploy full service
+    # Deploy service
+    print_header('SERVICE DEPLOYMENT', header_size)
     # execute_and_log('sls deploy', 'Deploy full service...')
-
-    # Deploy single functions
     function_name = 'add-picture'
     execute_and_log(f'sls deploy function --function {function_name}', f"Deploy single function: '{function_name}'")
 
     # Git procedures
-    print_header('GIT PROCEDURES', header_size)
+    print_header('UPDATE REPOSITORY', header_size)
     commit_msg = 'Standard commit'
     execute_and_log('git status', 'Present GIT status...')
     execute_and_log('git add .', 'Execute GIT add all...')
     execute_and_log(f'git commit -m "{commit_msg}"', f"Commiting with message: {commit_msg}...")
     execute_and_log(f'git push origin master', f"Executing GIT push to master branch...")
+
+    # Testing procedures
+    execute_and_log('sls invoke -f add-picture -l', 'Testing add-picture function...')
 
 
 
