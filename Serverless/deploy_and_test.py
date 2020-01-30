@@ -9,7 +9,7 @@ UPDATE_MAIN_BRANCH = False
 GIT_COMMIT_MESSAGE = 'Latest updates'
 
 TEST_FUNCTIONS = True
-LOG_TEST_DETAILS = False
+LOG_TEST_DETAILS = True
 FUNCTIONS_TO_TEST = [
     ('add-picture', 'tests/mock_add_picture_a.json'),
     # ('add-picture', 'tests/mock_add_picture_b.json')
@@ -77,6 +77,7 @@ class DeployAndTest:
                     f'"{params}" (sls invoke -f <name> -l --path <params_path>)...', LOG_TEST_DETAILS)
                 print('EXTRACTED DICTS:')
                 dicts = self.parse_dicts_from_strings(''.join(logs).replace('true', 'True').replace('false', 'False'))
+                print(dicts)
                 for i, x in enumerate(dicts):
                     # print(f'{i} - {json.dumps(x, indent=4, sort_keys=True)}')
                     wrap_list = self.WRAPPER.wrap(text=f'{i} - {x}')
