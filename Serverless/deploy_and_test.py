@@ -5,7 +5,7 @@ from datetime import datetime
 FULL_DEPLOY = False
 FUNCTIONS_TO_DEPLOY = ['add-picture']
 
-UPDATE_MAIN_BRANCH = True
+UPDATE_MAIN_BRANCH = False
 GIT_COMMIT_MESSAGE = 'Latest updates'
 
 TEST_FUNCTIONS = False
@@ -48,7 +48,7 @@ class DeployAndTest:
         self.execute_and_log('git branch', 'Present GIT branches (git status)...')
         self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
         self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
-                             f"Committing with message: {GIT_COMMIT_MESSAGE} (git commit -m <message>)...")
+                             f"Committing with message: '{GIT_COMMIT_MESSAGE}' (git commit -m <message>)...")
 
         if UPDATE_MAIN_BRANCH:
             self.execute_and_log(f'git push origin {self.MAIN_WORKING_BRANCH}',
