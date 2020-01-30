@@ -43,51 +43,35 @@ class DeployAndTest:
                                      f"Deploy single function: '{function_name}' "
                                      f"(sls deploy function --function <function_name>)")
 
-        # # Git procedures
-        # self.print_header('UPDATE REPOSITORY', self.HEADER_SIZE)
-        # self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
-        # self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
-        #                      f"Commiting with message: {GIT_COMMIT_MESSAGE} (git commit -m <message>)...")
-        # if UPDATE_MASTER_BRANCH:
-        #     self.execute_and_log('git checkout master', 'Selecting master branch (git checkout master)...')
-        #     self.execute_and_log('git status', 'Present GIT status (git status)...')
-        #     self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
-        #     self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
-        #                          f"Commiting with message: {GIT_COMMIT_MESSAGE} (git commit -m <message>)...")
-        #
-        #     self.execute_and_log(f'git push origin master',
-        #                          f"Executing GIT push to master branch (git push origin master)...")
-        # else:
-        #     logs = self.execute_and_log('git branch', 'Show repository branches (git branch)...')
-        #
-        #     self.execute_and_log(f'git checkout -b {self.AUTO_SAVE_REPO_NAME}',
-        #                          f'Creating auto-backup local branch "{self.AUTO_SAVE_REPO_NAME}"...')
-        #
-        #     self.execute_and_log(f'git checkout {self.AUTO_SAVE_REPO_NAME}',
-        #                          f'Selecting auto-backup branch (git checkout {self.AUTO_SAVE_REPO_NAME})...')
-        #
-        #     self.execute_and_log('git status', 'Present GIT status (git status)...')
-        #     self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
-        #     self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
-        #                          f"Commiting with message: {GIT_COMMIT_MESSAGE} (git commit -m <message>)...")
-        #
-        #     self.execute_and_log(f'git push origin {self.AUTO_SAVE_REPO_NAME}',
-        #                     f"Executing GIT push to auto-backup branch (git push origin {self.AUTO_SAVE_REPO_NAME})...")
-        #
-        #     self.execute_and_log(f'git branch -D {self.AUTO_SAVE_REPO_NAME}',
-        #                          f"Deleting auto-backup branch (git push origin {self.AUTO_SAVE_REPO_NAME})...")
-
         # Git procedures
         self.print_header('UPDATE REPOSITORY', self.HEADER_SIZE)
         self.execute_and_log('git status', 'Present GIT status (git status)...')
         self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
         self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
                              f"Commiting with message: {GIT_COMMIT_MESSAGE} (git commit -m <message>)...")
-        self.execute_and_log(f'git push origin {self.AUTO_SAVE_REPO_NAME}',
-                             f"Executing GIT push to auto-backup branch (git push origin {self.AUTO_SAVE_REPO_NAME})...")
+
         if UPDATE_MASTER_BRANCH:
             self.execute_and_log(f'git push origin master',
                                  f"Executing GIT push to master branch (git push origin master)...")
+
+        # logs = self.execute_and_log('git branch', 'Show repository branches (git branch)...')
+
+        self.execute_and_log(f'git checkout -b {self.AUTO_SAVE_REPO_NAME}',
+                             f'Creating local auto-backup local branch "{self.AUTO_SAVE_REPO_NAME}"...')
+
+        self.execute_and_log(f'git checkout {self.AUTO_SAVE_REPO_NAME}',
+                             f'Selecting auto-backup branch (git checkout {self.AUTO_SAVE_REPO_NAME})...')
+
+        self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
+        self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
+                             f"Commiting with message: {GIT_COMMIT_MESSAGE} (git commit -m <message>)...")
+
+        self.execute_and_log(f'git push origin {self.AUTO_SAVE_REPO_NAME}',
+                        f"Pushing to remote auto-backup branch (git push origin {self.AUTO_SAVE_REPO_NAME})...")
+
+        self.execute_and_log(f'git branch -D {self.AUTO_SAVE_REPO_NAME}',
+                             f"Deleting local auto-backup branch (git push origin {self.AUTO_SAVE_REPO_NAME})...")
+
 
 
 
