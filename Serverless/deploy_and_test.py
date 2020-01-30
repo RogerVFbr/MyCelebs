@@ -85,7 +85,7 @@ class DeployAndTest:
         for line in iter(p.stderr.readline, b''):
             wrap_list = self.WRAPPER.wrap(text=line.decode("utf-8").replace('\n', ''))
             for line in wrap_list:
-                if log_details: print(line)
+                if log_details: print('\u001b[31m' + line + '\u001b[0m')
                 self.LOGS += line
         p.stdout.close()
         p.wait()
