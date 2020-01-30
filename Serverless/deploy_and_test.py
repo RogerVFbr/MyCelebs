@@ -1,7 +1,6 @@
 import os
 import json
 import subprocess
-import sys
 
 
 class DeployAndTest:
@@ -36,7 +35,7 @@ class DeployAndTest:
 
         # Testing procedures
         self.print_header('TESTING PROCEDURES', header_size)
-        self.execute_and_log(f"sls invoke -f add-picture -l --raw {str(self.config['mocks']['KateMossSmall'])}",
+        self.execute_and_log(f"sls invoke -f add-picture -l --raw {str(config['mocks']['KateMossSmall'])}",
                              'Testing add-picture function...')
 
     def execute_and_log(self, execute, log):
