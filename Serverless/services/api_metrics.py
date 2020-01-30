@@ -75,7 +75,7 @@ class ApiMetrics:
 
         # Iterates on measurement dictionary selecting finalized entries.
         source = copy.copy(cls.__counters[invocation_id])
-        return {k: v for k, v in source.items() if not v.get('counting')}
+        return {k: v.get('time') for k, v in source.items() if not v.get('counting')}
 
     @staticmethod
     def __get_time_diff(ref):
