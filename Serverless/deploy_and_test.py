@@ -1,42 +1,67 @@
-import os
-import json
-import subprocess
+import os, json, subprocess
+
+FULL_DEPLOY = False
+FUNCTIONS_TO_DEPLOY = ['add-picture']
+
+UPDATE_REPOSITORY = True
+GIT_COMMIT_MESSAGE = 'Current updates'
+
+TEST_FUNCTIONS = True
+FUNCTIONS_TO_TEST = [
+    ('add-picture', 'tests/mock_add_picture_a.json'),
+    # ('add-picture', 'tests/mock_add_picture_b.json')
+]
+
+
 
 
 class DeployAndTest:
 
     project_path = None
+    function_parameters = None
+    header_size = 60
+    CONFIG_FILE_PATH = 'tests/config.json'
+    FUNCTION_PARAMETERS_PATH = 'tests/function_parameters.json'
 
     def __init__(self):
+
         # Read config JSON
-        with open('tests/config.json') as json_file:
-            config = json.load(json_file)
-            print(f'Parsing configurations: {config}')
-            self.project_path = config['project_paths']['home']
+        with open(self.CONFIG_FILE_PATH) as json_file:
+            self.project_path = json.load(json_file)['project_paths']['home']
 
         # Prepare execution
-        # os.path.dirname(os.path.realpath(__file__))
-        header_size = 60
 
         # Deploy service
-        self.print_header('SERVICE DEPLOYMENT', header_size)
-        # execute_and_log('sls deploy', 'Deploy full service...')
-        function_name = 'add-picture'
-        self.execute_and_log(f'sls deploy function --function '
-                             f'{function_name}', f"Deploy single function: '{function_name}'")
+        self.print_header('SERVICE DEPLOYMENT', self.header_size)
+        if FULL_DEPLOY:
+            self.execute_and_log('sls deploy', 'Deploy full service...')
+        else:
+            for function_name in FUNCTIONS_TO_DEPLOY:
+                self.execute_and_log(f'sls deploy function --function {function_name}',
+                                     f"Deploy single function: '{function_name}'")
 
         # Git procedures
-        self.print_header('UPDATE REPOSITORY', header_size)
-        commit_msg = 'Standard commit'
-        self.execute_and_log('git status', 'Present GIT status...')
-        self.execute_and_log('git add .', 'Execute GIT add all...')
-        self.execute_and_log(f'git commit -m "{commit_msg}"', f"Commiting with message: {commit_msg}...")
-        self.execute_and_log(f'git push origin master', f"Executing GIT push to master branch...")
+        if UPDATE_REPOSITORY:
+            self.print_header('UPDATE REPOSITORY', self.header_size)
+            self.execute_and_log('git status', 'Present GIT status...')
+            self.execute_and_log('git add .', 'Execute GIT add all...')
+            self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
+                                 f"Commiting with message: {GIT_COMMIT_MESSAGE}...")
+            self.execute_and_log(f'git push origin master', f"Executing GIT push to master branch...")
 
         # Testing procedures
-        self.print_header('TESTING PROCEDURES', header_size)
-        self.execute_and_log('sls invoke -f add-picture -l --path tests/mock_add_picture_a.json',
-                             'Testing add-picture function...')
+        if TEST_FUNCTIONS:
+            self.print_header('TESTING PROCEDURES', self.header_size)
+            for test in FUNCTIONS_TO_TEST:
+                name = test[0]
+                params = ''
+                try:
+                    params = test[1]
+                except:
+                    pass
+                command = f'sls invoke -f {name} -l'
+                if params.split(): command += f' --path {params.split()}'
+                self.execute_and_log(command, f'Testing "{name}" function with parameters "{params}"...')
 
     def execute_and_log(self, execute, log):
         print(f'\u001b[33m{log}\x1b[0m')
