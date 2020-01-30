@@ -5,7 +5,7 @@ from datetime import datetime
 FULL_DEPLOY = False
 FUNCTIONS_TO_DEPLOY = ['add-picture']
 
-UPDATE_MASTER_BRANCH = True
+UPDATE_MASTER_BRANCH = False
 GIT_COMMIT_MESSAGE = 'Current updates'
 
 TEST_FUNCTIONS = False
