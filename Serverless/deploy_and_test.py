@@ -51,7 +51,7 @@ class DeployAndTest:
         print(f'\u001b[33m{log}\x1b[0m')
         # os.system(execute)
         p = subprocess.Popen(execute, close_fds=True, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print(p.communicate())
+        print(p.communicate()[1].decode("utf-8"))
         # while p.poll() is None:
         #     out = p.stdout.read(1)
         #     sys.stdout.write(out.decode("utf-8"))
