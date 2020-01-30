@@ -52,7 +52,8 @@ class DeployAndTest:
         # p.stdout.read()
         # print(p.stdout.read())
 
-        p = subprocess.run(execute, shell=True)
+        p = subprocess.run(execute, shell=True, capture_output=True)
+        print(str(p))
 
 
     @staticmethod
