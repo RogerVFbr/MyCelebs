@@ -22,8 +22,7 @@ class DeployAndTest:
     HEADER_SIZE = 60
     CONFIG_FILE_PATH = 'tests/config.json'
     FUNCTION_PARAMETERS_PATH = 'tests/function_parameters.json'
-    # AUTO_SAVE_REPO_NAME = f'auto-save-{datetime.now().strftime("%Y-%m-%d")}'
-    AUTO_SAVE_REPO_NAME = f'auto-save'
+    AUTO_SAVE_REPO_NAME = f'auto-save-{datetime.now().strftime("%Y-%m-%d")}'
 
     def __init__(self):
 
