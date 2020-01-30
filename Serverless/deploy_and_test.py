@@ -49,7 +49,7 @@ class DeployAndTest:
 
     def execute_and_log(self, execute, log):
         print(f'\u001b[33m{log}\x1b[0m')
-        p = subprocess.Popen(execute, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         for line in iter(p.stdout.readline, b''):
             print(line.decode("utf-8").replace('\n', ''))
         for line in iter(p.stderr.readline, b''):
