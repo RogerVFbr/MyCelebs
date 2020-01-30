@@ -51,8 +51,8 @@ class DeployAndTest:
         # p = subprocess.Popen([execute.split()], stdout=subprocess.PIPE, cwd=self.project_path)
         # p.stdout.read()
         # print(p.stdout.read())
-        
-        p = subprocess.run(execute, shell=True)
+
+        p = subprocess.run(execute, shell=True, capture_output=True)
 
 
     @staticmethod
