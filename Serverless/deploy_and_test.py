@@ -9,7 +9,7 @@ UPDATE_MAIN_BRANCH = False
 GIT_COMMIT_MESSAGE = 'Latest updates'
 
 TEST_FUNCTIONS = True
-LOG_TEST_DETAILS = True
+LOG_TEST_DETAILS = False
 FUNCTIONS_TO_TEST = [
     ('add-picture', 'tests/mock_add_picture_a.json'),
     # ('add-picture', 'tests/mock_add_picture_b.json')
@@ -78,10 +78,9 @@ class DeployAndTest:
                 print('EXTRACTED DICTS:')
                 dicts = self.parse_dicts_from_strings(''.join(logs).replace('true', 'True').replace('false', 'False'))
                 for i, x in enumerate(dicts):
-                    # print(f'{i} - {json.dumps(x, indent=4, sort_keys=True)}')
-                    # wrap_list = self.WRAPPER.wrap(text=f'{i} - {x}')
-                    # print(wrap_list)
-                    print(f'{i} - {x}')
+                    wrap_list = self.WRAPPER.wrap(text=f'{i} - {x}')
+                    for line in wrap_list:
+                        print(line)
 
     def execute_and_log(self, execute, log, log_details = True):
         print(f'\u001b[33m{log}\x1b[0m')
