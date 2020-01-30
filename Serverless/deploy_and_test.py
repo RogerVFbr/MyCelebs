@@ -76,8 +76,8 @@ class DeployAndTest:
                     f'"{params}" (sls invoke -f <name> -l --path <params_path>)...', LOG_TEST_DETAILS)
                 print('EXTRACTED DICTS:')
                 dicts = self.parse_dicts_from_strings(''.join(logs).replace('true', 'True').replace('false', 'False'))
-                for i, x in enumerate(dicts):
-                    wrap_list = self.WRAPPER.wrap(text=f'{i} - {x}')
+                if len(dicts)>0:
+                    wrap_list = self.WRAPPER.wrap(text=str(dicts[0]))
                     for line in wrap_list:
                         print(line)
 
