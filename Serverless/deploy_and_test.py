@@ -21,7 +21,6 @@ class DeployAndTest:
     WRAPPER = textwrap.TextWrapper(width=250)
     HEADER_SIZE = 60
     CONFIG_FILE_PATH = 'tests/config.json'
-    FUNCTION_PARAMETERS_PATH = 'tests/function_parameters.json'
     AUTO_SAVE_BRANCH = f'auto-save-{datetime.now().strftime("%Y-%m-%d")}'
     MAIN_WORKING_BRANCH = 'master'
 
@@ -88,15 +87,15 @@ class DeployAndTest:
         p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         for line in iter(p.stdout.readline, b''):
+            logs.append(line.strip())
             wrap_list = self.WRAPPER.wrap(text=line.decode("utf-8").replace('\n', ''))
-            for line in wrap_list:
-                if log_details: print(line)
-                logs.append(line.strip())
+            for wrap_line in wrap_list:
+                if log_details: print(wrap_line)
         for line in iter(p.stderr.readline, b''):
+            logs.append(line.strip())
             wrap_list = self.WRAPPER.wrap(text=line.decode("utf-8").replace('\n', ''))
-            for line in wrap_list:
-                if log_details: print('\u001b[31m' + line + '\u001b[0m')
-                logs.append(line.strip())
+            for wrap_line in wrap_list:
+                if log_details: print('\u001b[31m' + wrap_line + '\u001b[0m')
         p.stdout.close()
         p.wait()
         return logs
