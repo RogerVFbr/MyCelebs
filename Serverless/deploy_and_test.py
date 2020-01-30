@@ -77,11 +77,11 @@ class DeployAndTest:
                     f'"{params}" (sls invoke -f <name> -l --path <params_path>)...', LOG_TEST_DETAILS)
                 print('EXTRACTED DICTS:')
                 dicts = self.parse_dicts_from_strings(''.join(logs).replace('true', 'True').replace('false', 'False'))
-                print(dicts)
                 for i, x in enumerate(dicts):
                     # print(f'{i} - {json.dumps(x, indent=4, sort_keys=True)}')
-                    wrap_list = self.WRAPPER.wrap(text=f'{i} - {x}')
-                    print(wrap_list)
+                    # wrap_list = self.WRAPPER.wrap(text=f'{i} - {x}')
+                    # print(wrap_list)
+                    print(f'{i} - {x}')
 
     def execute_and_log(self, execute, log, log_details = True):
         print(f'\u001b[33m{log}\x1b[0m')
