@@ -6,7 +6,7 @@ FULL_DEPLOY = False
 FUNCTIONS_TO_DEPLOY = ['add-picture']
 
 UPDATE_MASTER_BRANCH = False
-GIT_COMMIT_MESSAGE = 'Current updates'
+GIT_COMMIT_MESSAGE = 'Latest updates'
 
 TEST_FUNCTIONS = False
 LOG_TEST_DETAILS = False
