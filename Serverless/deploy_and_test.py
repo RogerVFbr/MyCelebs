@@ -50,15 +50,24 @@ class DeployAndTest:
     def execute_and_log(self, execute, log):
         print(f'\u001b[33m{log}\x1b[0m')
         # os.system(execute)
-        p = subprocess.Popen(execute, close_fds=True, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print(p.communicate()[0].decode("utf-8"))
+        p = subprocess.Popen(execute, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # while True:
+        #     output = p.stdout.readline()
+        #     if output == '' and p.poll() is not None:
+        #         break
+        #     if output:
+        #         print(output.strip())
+        # rc = p.poll()
+        # print(rc)
+        # print(p.communicate()[0].decode("utf-8"))
+        # print(p.communicate()[1].decode("utf-8"))
         # print(p.communicate())
-        # while p.poll() is None:
-        #     out = p.stdout.read(1)
-        #     sys.stdout.write(out.decode("utf-8"))
-        #     sys.stdout.flush()
-        # p.stdout.close()
-        # p.wait()
+        while p.poll() is None:
+            out = p.stdout.read(1)
+            sys.stdout.write(out.decode("utf-8"))
+            sys.stdout.flush()
+        p.stdout.close()
+        p.wait()
         # for line in iter(p.stdout.readline, b''):
         #     print(line)
         # p.stdout.close()
