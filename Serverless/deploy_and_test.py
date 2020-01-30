@@ -5,7 +5,7 @@ from datetime import datetime
 FULL_DEPLOY = False
 FUNCTIONS_TO_DEPLOY = ['add-picture']
 
-UPDATE_MASTER_BRANCH = False
+UPDATE_MAIN_BRANCH = False
 GIT_COMMIT_MESSAGE = 'Latest updates'
 
 TEST_FUNCTIONS = False
@@ -22,7 +22,8 @@ class DeployAndTest:
     HEADER_SIZE = 60
     CONFIG_FILE_PATH = 'tests/config.json'
     FUNCTION_PARAMETERS_PATH = 'tests/function_parameters.json'
-    AUTO_SAVE_REPO_NAME = f'auto-save-{datetime.now().strftime("%Y-%m-%d")}'
+    AUTO_SAVE_BRANCH = f'auto-save-{datetime.now().strftime("%Y-%m-%d")}'
+    MAIN_WORKING_BRANCH = 'master'
 
     def __init__(self):
 
@@ -47,23 +48,24 @@ class DeployAndTest:
         self.execute_and_log('git branch', 'Present GIT branches (git status)...')
         self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
         self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
-                             f"Commiting with message: {GIT_COMMIT_MESSAGE} (git commit -m <message>)...")
+                             f"Committing with message: {GIT_COMMIT_MESSAGE} (git commit -m <message>)...")
 
-        if UPDATE_MASTER_BRANCH:
-            self.execute_and_log(f'git push origin master',
-                                 f"Executing GIT push to master branch (git push origin master)...")
+        if UPDATE_MAIN_BRANCH:
+            self.execute_and_log(f'git push origin {self.MAIN_WORKING_BRANCH}',
+                                 f"Executing GIT push to '{self.MAIN_WORKING_BRANCH}' "
+                                 f"branch (git push origin {self.MAIN_WORKING_BRANCH})...")
 
-        self.execute_and_log(f'git checkout -b {self.AUTO_SAVE_REPO_NAME}',
-                             f'Creating local auto-backup local branch "{self.AUTO_SAVE_REPO_NAME}"...')
+        self.execute_and_log(f'git checkout -b {self.AUTO_SAVE_BRANCH}',
+                             f'Creating local auto-backup local branch "{self.AUTO_SAVE_BRANCH}"...')
 
-        self.execute_and_log(f'git push origin {self.AUTO_SAVE_REPO_NAME}',
-                        f"Pushing to remote auto-backup branch (git push origin {self.AUTO_SAVE_REPO_NAME})...")
+        self.execute_and_log(f'git push origin {self.AUTO_SAVE_BRANCH}',
+                             f"Pushing to remote auto-backup branch (git push origin {self.AUTO_SAVE_BRANCH})...")
 
-        self.execute_and_log(f'git checkout master',
-                             f'Switching back to local master branch...')
+        self.execute_and_log(f'git checkout {self.MAIN_WORKING_BRANCH}',
+                             f'Switching back to local master {self.MAIN_WORKING_BRANCH}...')
 
-        self.execute_and_log(f'git branch -D {self.AUTO_SAVE_REPO_NAME}',
-                             f"Deleting local auto-backup branch (git push origin {self.AUTO_SAVE_REPO_NAME})...")
+        self.execute_and_log(f'git branch -D {self.AUTO_SAVE_BRANCH}',
+                             f"Deleting local auto-backup branch (git push origin {self.AUTO_SAVE_BRANCH})...")
 
 
 
