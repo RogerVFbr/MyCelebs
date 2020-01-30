@@ -69,7 +69,7 @@ class DeployAndTest:
         # p.stdout.close()
         # p.wait()
         for line in iter(p.stdout.readline, b''):
-            print(line)
+            print(line.decode("utf-8"))
         p.stdout.close()
         p.wait()
         # p.stdout.read()
