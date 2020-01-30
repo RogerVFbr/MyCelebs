@@ -28,7 +28,7 @@ def main():
     execute_and_log(f'git push origin master', f"Executing GIT push to master branch...")
 
     # Testing procedures
-    execute_and_log('sls invoke -f add-picture -l', 'Testing add-picture function...')
+    # execute_and_log('sls invoke -f add-picture -l', 'Testing add-picture function...')
 
 
 
