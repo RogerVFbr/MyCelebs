@@ -1,4 +1,4 @@
-import os, json, subprocess
+import os, json, subprocess, textwrap, re, ast
 
 FULL_DEPLOY = False
 FUNCTIONS_TO_DEPLOY = ['add-picture']
@@ -7,21 +7,20 @@ UPDATE_REPOSITORY = True
 GIT_COMMIT_MESSAGE = 'Current updates'
 
 TEST_FUNCTIONS = True
+LOG_TEST_DETAILS = False
 FUNCTIONS_TO_TEST = [
     ('add-picture', 'tests/mock_add_picture_a.json'),
     # ('add-picture', 'tests/mock_add_picture_b.json')
 ]
 
 
-
-
 class DeployAndTest:
 
-    project_path = None
-    function_parameters = None
-    header_size = 60
+    WRAPPER = textwrap.TextWrapper(width=250)
+    HEADER_SIZE = 60
     CONFIG_FILE_PATH = 'tests/config.json'
     FUNCTION_PARAMETERS_PATH = 'tests/function_parameters.json'
+    LOGS = ''
 
     def __init__(self):
 
@@ -32,26 +31,29 @@ class DeployAndTest:
         # Prepare execution
 
         # Deploy service
-        self.print_header('SERVICE DEPLOYMENT', self.header_size)
+        self.print_header('SERVICE DEPLOYMENT', self.HEADER_SIZE)
         if FULL_DEPLOY:
-            self.execute_and_log('sls deploy', 'Deploy full service...')
+            self.execute_and_log('sls deploy', 'Deploy full service (sls deploy)...')
         else:
             for function_name in FUNCTIONS_TO_DEPLOY:
                 self.execute_and_log(f'sls deploy function --function {function_name}',
-                                     f"Deploy single function: '{function_name}'")
+                                     f"Deploy single function: '{function_name}' "
+                                     f"(sls deploy function --function <function_name>)")
 
         # Git procedures
         if UPDATE_REPOSITORY:
-            self.print_header('UPDATE REPOSITORY', self.header_size)
-            self.execute_and_log('git status', 'Present GIT status...')
-            self.execute_and_log('git add .', 'Execute GIT add all...')
+            self.print_header('UPDATE REPOSITORY', self.HEADER_SIZE)
+            self.execute_and_log('git status', 'Present GIT status (git status)...')
+            self.execute_and_log('git branch', 'Show repository branches (git branch)...')
+            self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
             self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
-                                 f"Commiting with message: {GIT_COMMIT_MESSAGE}...")
-            self.execute_and_log(f'git push origin master', f"Executing GIT push to master branch...")
+                                 f"Commiting with message: {GIT_COMMIT_MESSAGE} (git commit -m <message>)...")
+            self.execute_and_log(f'git push origin master',
+                                 f"Executing GIT push to master branch (git push origin master)...")
 
         # Testing procedures
         if TEST_FUNCTIONS:
-            self.print_header('TESTING PROCEDURES', self.header_size)
+            self.print_header('TESTING PROCEDURES', self.HEADER_SIZE)
             for test in FUNCTIONS_TO_TEST:
                 name = test[0]
                 params = ''
@@ -60,17 +62,31 @@ class DeployAndTest:
                 except:
                     pass
                 command = f'sls invoke -f {name} -l'
-                if params.split(): command += f' --path {params.split()}'
-                self.execute_and_log(command, f'Testing "{name}" function with parameters "{params}"...')
+                if params.strip(): command += f' --path {params.strip()}'
+                self.LOGS = ''
+                self.execute_and_log(command, f'Testing "{name}" function with parameters '
+                    f'"{params}" (sls invoke -f <name> -l --path <params_path>)...', LOG_TEST_DETAILS)
+                print('EXTRACTED DICTS:')
+                dicts = self.parse_dicts_from_strings(self.LOGS.replace('true', 'True').replace('false', 'False'))
+                for i, x in enumerate(dicts):
+                    # print(f'{i} - {json.dumps(x, indent=4, sort_keys=True)}')
+                    wrap_list = self.WRAPPER.wrap(text=f'{i} - {x}')
+                    print(wrap_list)
 
-    def execute_and_log(self, execute, log):
+    def execute_and_log(self, execute, log, log_details = True):
         print(f'\u001b[33m{log}\x1b[0m')
-        p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
         for line in iter(p.stdout.readline, b''):
-            print(line.decode("utf-8").replace('\n', ''))
+            wrap_list = self.WRAPPER.wrap(text=line.decode("utf-8").replace('\n', ''))
+            for line in wrap_list:
+                if log_details: print(line)
+                self.LOGS += line
         for line in iter(p.stderr.readline, b''):
-            print(line.decode("utf-8").replace('\n', ''))
-            pass
+            wrap_list = self.WRAPPER.wrap(text=line.decode("utf-8").replace('\n', ''))
+            for line in wrap_list:
+                if log_details: print(line)
+                self.LOGS += line
         p.stdout.close()
         p.wait()
 
@@ -90,6 +106,25 @@ class DeployAndTest:
         lower_line = ' \\' + "".join(['=' for x in range(len(main)-4)]) + '/'
         print(f'{color}{upper_line}\n{main}\n{lower_line}{default}')
         print('')
+
+    @staticmethod
+    def parse_dicts_from_strings(value):
+        dicts = []
+        current_check = ''
+        open_bracers = 0
+        for x in value:
+            if x == '{':
+                open_bracers += 1
+            elif x == '}' and open_bracers > 0:
+                open_bracers -= 1
+                if open_bracers == 0:
+                    current_check += x
+                    dicts.append(eval(current_check))
+                    current_check = ''
+                    continue
+            if open_bracers > 0:
+                current_check += x
+        return dicts
 
 
 if __name__ == "__main__":
