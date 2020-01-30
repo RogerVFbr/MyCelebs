@@ -5,7 +5,7 @@ from datetime import datetime
 FULL_DEPLOY = False
 FUNCTIONS_TO_DEPLOY = ['add-picture']
 
-UPDATE_MAIN_BRANCH = False
+UPDATE_MAIN_BRANCH = True
 GIT_COMMIT_MESSAGE = 'Latest updates'
 
 TEST_FUNCTIONS = False
@@ -56,13 +56,13 @@ class DeployAndTest:
                                  f"branch (git push origin {self.MAIN_WORKING_BRANCH})...")
 
         self.execute_and_log(f'git checkout -b {self.AUTO_SAVE_BRANCH}',
-                             f'Creating local auto-backup local branch "{self.AUTO_SAVE_BRANCH}"...')
+                             f'Creating local auto-backup branch "{self.AUTO_SAVE_BRANCH}"...')
 
         self.execute_and_log(f'git push origin {self.AUTO_SAVE_BRANCH}',
                              f"Pushing to remote auto-backup branch (git push origin {self.AUTO_SAVE_BRANCH})...")
 
         self.execute_and_log(f'git checkout {self.MAIN_WORKING_BRANCH}',
-                             f'Switching back to local master {self.MAIN_WORKING_BRANCH}...')
+                             f'Switching back to local {self.MAIN_WORKING_BRANCH}...')
 
         self.execute_and_log(f'git branch -D {self.AUTO_SAVE_BRANCH}',
                              f"Deleting local auto-backup branch (git push origin {self.AUTO_SAVE_BRANCH})...")
