@@ -54,13 +54,8 @@ class DeployAndTest:
             self.execute_and_log(f'git push origin master',
                                  f"Executing GIT push to master branch (git push origin master)...")
 
-        # logs = self.execute_and_log('git branch', 'Show repository branches (git branch)...')
-
         self.execute_and_log(f'git checkout -b {self.AUTO_SAVE_REPO_NAME}',
                              f'Creating local auto-backup local branch "{self.AUTO_SAVE_REPO_NAME}"...')
-
-        self.execute_and_log(f'git checkout {self.AUTO_SAVE_REPO_NAME}',
-                             f'Selecting auto-backup branch (git checkout {self.AUTO_SAVE_REPO_NAME})...')
 
         self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
         self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
@@ -68,6 +63,9 @@ class DeployAndTest:
 
         self.execute_and_log(f'git push origin {self.AUTO_SAVE_REPO_NAME}',
                         f"Pushing to remote auto-backup branch (git push origin {self.AUTO_SAVE_REPO_NAME})...")
+
+        self.execute_and_log(f'git checkout master',
+                             f'Switching back to local master branch...')
 
         self.execute_and_log(f'git branch -D {self.AUTO_SAVE_REPO_NAME}',
                              f"Deleting local auto-backup branch (git push origin {self.AUTO_SAVE_REPO_NAME})...")
