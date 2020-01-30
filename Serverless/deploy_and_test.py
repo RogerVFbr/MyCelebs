@@ -55,13 +55,21 @@ class DeployAndTest:
                                  f"Executing GIT push to master branch (git push origin master)...")
         else:
             logs = self.execute_and_log('git branch', 'Show repository branches (git branch)...')
-            print('logs: ' + logs)
-            if not self.AUTO_SAVE_REPO_NAME in logs:
-                print('current auto save branch not found')
+            if self.AUTO_SAVE_REPO_NAME not in ''.join(logs):
                 self.execute_and_log(f'git checkout -b {self.AUTO_SAVE_REPO_NAME}',
                                      f'Creating local branch "{self.AUTO_SAVE_REPO_NAME}"...')
+
+            self.execute_and_log(f'git checkout {self.AUTO_SAVE_REPO_NAME}',
+                                 f'Selecting auto-backup branch (git checkout {self.AUTO_SAVE_REPO_NAME})...')
+
+            self.execute_and_log('git status', 'Present GIT status (git status)...')
+            self.execute_and_log('git add .', 'Execute GIT add all (git add . )...')
+            self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
+                                 f"Commiting with message: {GIT_COMMIT_MESSAGE} (git commit -m <message>)...")
+
             self.execute_and_log(f'git push origin {self.AUTO_SAVE_REPO_NAME}',
                             f"Executing GIT push to auto-backup branch (git push origin {self.AUTO_SAVE_REPO_NAME})...")
+
             self.execute_and_log('git status', 'Present GIT status (git status)...')
 
 
@@ -83,7 +91,7 @@ class DeployAndTest:
                 logs = self.execute_and_log(command, f'Testing "{name}" function with parameters '
                     f'"{params}" (sls invoke -f <name> -l --path <params_path>)...', LOG_TEST_DETAILS)
                 print('EXTRACTED DICTS:')
-                dicts = self.parse_dicts_from_strings(logs.replace('true', 'True').replace('false', 'False'))
+                dicts = self.parse_dicts_from_strings(''.join(logs).replace('true', 'True').replace('false', 'False'))
                 for i, x in enumerate(dicts):
                     # print(f'{i} - {json.dumps(x, indent=4, sort_keys=True)}')
                     wrap_list = self.WRAPPER.wrap(text=f'{i} - {x}')
@@ -91,19 +99,19 @@ class DeployAndTest:
 
     def execute_and_log(self, execute, log, log_details = True):
         print(f'\u001b[33m{log}\x1b[0m')
-        logs = ''
+        logs = []
         p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         for line in iter(p.stdout.readline, b''):
             wrap_list = self.WRAPPER.wrap(text=line.decode("utf-8").replace('\n', ''))
             for line in wrap_list:
                 if log_details: print(line)
-                logs += line
+                logs.append(line.strip())
         for line in iter(p.stderr.readline, b''):
             wrap_list = self.WRAPPER.wrap(text=line.decode("utf-8").replace('\n', ''))
             for line in wrap_list:
                 if log_details: print('\u001b[31m' + line + '\u001b[0m')
-                logs += line
+                logs.append(line.strip())
         p.stdout.close()
         p.wait()
         return logs
