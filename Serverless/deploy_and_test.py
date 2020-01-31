@@ -106,13 +106,13 @@ class DeployAndTest:
         p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         for line in iter(p.stdout.readline, b''):
-            log = line.strip().decode("utf-8").replace('\n', '')
+            log = line.decode("utf-8").replace('\n', '')
             logs.append(log)
             wrap_list = self.WRAPPER.wrap(text=log)
             for wrap_line in wrap_list:
                 if log_details: print(wrap_line)
         for line in iter(p.stderr.readline, b''):
-            log = line.strip().decode("utf-8").replace('\n', '')
+            log = line.decode("utf-8").replace('\n', '')
             logs.append(log)
             wrap_list = self.WRAPPER.wrap(text=log)
             for wrap_line in wrap_list:
