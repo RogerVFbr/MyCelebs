@@ -2,10 +2,12 @@ import os, json, subprocess, textwrap
 from datetime import datetime
 
 
-FULL_DEPLOY = True
+DEPLOY = True
+FULL = False
 FUNCTIONS_TO_DEPLOY = ['add-picture']
 
-UPDATE_MAIN_BRANCH = False
+UPDATE_REPOSITORY = True
+MAIN_BRANCH = False
 GIT_COMMIT_MESSAGE = 'Latest updates'
 
 TEST_FUNCTIONS = True
@@ -35,8 +37,9 @@ class DeployAndTest:
         self.test_functions()
 
     def service_deployment(self):
+        if not DEPLOY: return
         self.print_header('SERVICE DEPLOYMENT')
-        if FULL_DEPLOY:
+        if FULL:
             self.execute_and_log('sls deploy', 'Deploy full service (sls deploy)...')
         else:
             for function_name in FUNCTIONS_TO_DEPLOY:
@@ -45,13 +48,14 @@ class DeployAndTest:
                                      f"(sls deploy function --function <function_name>)")
 
     def git_procedures(self):
+        if not UPDATE_REPOSITORY: return
         self.print_header('UPDATE REPOSITORY')
         self.execute_and_log('git branch', 'Present current GIT branches...')
         self.execute_and_log('git add .', 'Execute GIT add all...')
         self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
                              f"Committing with message: '{GIT_COMMIT_MESSAGE}'...")
 
-        if UPDATE_MAIN_BRANCH:
+        if MAIN_BRANCH:
             self.execute_and_log(f'git push origin {self.MAIN_WORKING_BRANCH}',
                                  f"Executing GIT push to '{self.MAIN_WORKING_BRANCH}' branch...")
         else:
@@ -65,29 +69,36 @@ class DeployAndTest:
                                  f"Deleting local auto-backup branch...")
 
     def test_functions(self):
-        if TEST_FUNCTIONS:
-            self.print_header('TESTING PROCEDURES')
-            for test in FUNCTIONS_TO_TEST:
-                name = test[0]
-                params = ''
-                try:
-                    params = test[1]
-                except:
-                    pass
-                command = f'sls invoke -f {name} -l'
-                if params.strip(): command += f' --path {params.strip()}'
-                logs = self.execute_and_log(command, f'Testing "{name}" function with parameters '
-                    f'"{params}" (sls invoke -f <name> -l --path <params_path>)...', LOG_TEST_DETAILS)
+        if not TEST_FUNCTIONS: return
+        self.print_header('TESTING PROCEDURES')
+        for test in FUNCTIONS_TO_TEST:
+            name = test[0]
+            params = ''
+            try:
+                params = test[1]
+            except:
+                pass
+            command = f'sls invoke -f {name} -l'
+            if params.strip(): command += f' --path {params.strip()}'
+            logs = self.execute_and_log(command, f'Testing "{name}" function with parameters '
+                f'"{params}" (sls invoke -f <name> -l --path <params_path>)...', LOG_TEST_DETAILS)
 
-                if name == 'add-picture': self.test_add_picture(logs, params)
+            if name == 'add-picture': self.test_add_picture(logs, params)
 
     def test_add_picture(self, response, params):
-        print('EXTRACTED DICTS:')
         dicts = self.parse_dicts_from_strings(''.join(response).replace('true', 'True').replace('false', 'False'))
         if len(dicts) > 0:
-            wrap_list = self.WRAPPER.wrap(text=str(dicts[0]))
+            response = dicts[0]
+            wrap_list = self.WRAPPER.wrap(text='Response: ' + str(response))
             for line in wrap_list:
                 print(line)
+
+            http_status_code = response.get('statusCode')
+            if http_status_code == 200:
+                print('Test status: \u001b[32mSUCCESS\u001b[0m (Http status code is 200)')
+            else:
+                print('Test status: \u001b[31mFAILED\u001b[0m (Http status code is not 200)')
+
 
     def execute_and_log(self, execute, log, log_details = True):
         print(f'\u001b[33m{log}\x1b[0m')
