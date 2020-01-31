@@ -14,8 +14,10 @@ class DeleteLog(APIPhase):
         :param invocation_id: string containing id of current cloud function invocation to be to be used by API metrics.
         """
 
-        self.repository = AWSSQS(self.env.ADD_PICTURE_QUEUE_URL)   # :AWSSQS: log repository to be accessed.
-        self.log_id = log_id                                       # :str: id of the log to be deleted.
+        queue_url = self.env.QUEUE_BASE_URL                            # :str: Queue base url.
+        queue_name = self.env.ADD_PICTURE_QUEUE_NAME                   # :str: Queue name.
+        self.repository = AWSSQS(queue_url, queue_name)                # :AWSSQS: log repository to be accessed.
+        self.log_id = log_id                                           # :str: id of the log to be deleted.
 
         # Initializes APIPhase superclass parameters and procedures
         super(DeleteLog, self).__init__(prefix='DL', phase_name='Delete queue log', invocation_id=invocation_id)

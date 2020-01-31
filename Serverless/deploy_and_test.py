@@ -2,7 +2,7 @@ import os, json, subprocess, textwrap
 from datetime import datetime
 
 
-FULL_DEPLOY = False
+FULL_DEPLOY = True
 FUNCTIONS_TO_DEPLOY = ['add-picture']
 
 UPDATE_MAIN_BRANCH = False
@@ -20,17 +20,21 @@ class DeployAndTest:
 
     WRAPPER = textwrap.TextWrapper(width=250)
     HEADER_SIZE = 60
-    CONFIG_FILE_PATH = 'tests/config.json'
     AUTO_SAVE_BRANCH = f'auto-save-{datetime.now().strftime("%Y-%m-%d")}'
     MAIN_WORKING_BRANCH = 'master'
 
     def __init__(self):
 
-        # Read config JSON
-        with open(self.CONFIG_FILE_PATH) as json_file:
-            self.project_path = json.load(json_file)['project_paths']['home']
-
         # Deploy service
+        self.service_deployment()
+
+        # Git procedures
+        self.git_procedures()
+
+        # Testing procedures
+        self.test_functions()
+
+    def service_deployment(self):
         self.print_header('SERVICE DEPLOYMENT')
         if FULL_DEPLOY:
             self.execute_and_log('sls deploy', 'Deploy full service (sls deploy)...')
@@ -40,7 +44,7 @@ class DeployAndTest:
                                      f"Deploy single function: '{function_name}' "
                                      f"(sls deploy function --function <function_name>)")
 
-        # Git procedures
+    def git_procedures(self):
         self.print_header('UPDATE REPOSITORY')
         self.execute_and_log('git branch', 'Present current GIT branches...')
         self.execute_and_log('git add .', 'Execute GIT add all...')
@@ -60,7 +64,7 @@ class DeployAndTest:
             self.execute_and_log(f'git branch -D {self.AUTO_SAVE_BRANCH}',
                                  f"Deleting local auto-backup branch...")
 
-        # Testing procedures
+    def test_functions(self):
         if TEST_FUNCTIONS:
             self.print_header('TESTING PROCEDURES')
             for test in FUNCTIONS_TO_TEST:
@@ -74,12 +78,16 @@ class DeployAndTest:
                 if params.strip(): command += f' --path {params.strip()}'
                 logs = self.execute_and_log(command, f'Testing "{name}" function with parameters '
                     f'"{params}" (sls invoke -f <name> -l --path <params_path>)...', LOG_TEST_DETAILS)
-                print('EXTRACTED DICTS:')
-                dicts = self.parse_dicts_from_strings(''.join(logs).replace('true', 'True').replace('false', 'False'))
-                if len(dicts)>0:
-                    wrap_list = self.WRAPPER.wrap(text=str(dicts[0]))
-                    for line in wrap_list:
-                        print(line)
+
+                if name == 'add-picture': self.test_add_picture(logs, params)
+
+    def test_add_picture(self, response, params):
+        print('EXTRACTED DICTS:')
+        dicts = self.parse_dicts_from_strings(''.join(response).replace('true', 'True').replace('false', 'False'))
+        if len(dicts) > 0:
+            wrap_list = self.WRAPPER.wrap(text=str(dicts[0]))
+            for line in wrap_list:
+                print(line)
 
     def execute_and_log(self, execute, log, log_details = True):
         print(f'\u001b[33m{log}\x1b[0m')
