@@ -11,7 +11,7 @@ MAIN_BRANCH = False
 GIT_COMMIT_MESSAGE = 'Latest updates'
 
 TEST_FUNCTIONS = True
-LOG_TEST_DETAILS = False
+LOG_TEST_DETAILS = True
 FUNCTIONS_TO_TEST = [
     ('add-picture', 'tests/mock_add_picture_a.json'),
     # ('add-picture', 'tests/mock_add_picture_b.json')
