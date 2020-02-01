@@ -36,6 +36,7 @@ class DeployAndTest:
 
     def __init__(self):
 
+        # Start duration measuring
         duration = time.time()
 
         # Deploy service
@@ -47,7 +48,8 @@ class DeployAndTest:
         # Testing procedures
         self.test_functions()
 
-        self.print_yellow(f'Elapsed (test and deploy execution): {self.get_duration(duration)}')
+        # Print procedure time measuring
+        self.log_yellow(f'Elapsed (test and deploy execution): {self.get_duration(duration)}')
 
     def service_deployment(self):
         if not DEPLOY: return
@@ -59,7 +61,7 @@ class DeployAndTest:
             for function_name in FUNCTIONS_TO_DEPLOY:
                 self.execute_and_log(f'sls deploy function --function {function_name}',
                                      f"Deploy single function: '{function_name}'")
-        self.print_yellow(f'Elapsed: {self.get_duration(duration)}')
+        self.log_yellow(f'Elapsed: {self.get_duration(duration)}')
 
     def git_procedures(self):
         if not UPDATE_REPOSITORY: return
@@ -82,7 +84,7 @@ class DeployAndTest:
                                  f"Switching back to local main branch '{self.MAIN_WORKING_BRANCH}'...")
             self.execute_and_log(f'git branch -D {self.AUTO_SAVE_BRANCH}',
                                  f"Deleting local auto-backup branch...")
-        self.print_yellow(f'Elapsed: {self.get_duration(duration)}')
+        self.log_yellow(f'Elapsed: {self.get_duration(duration)}')
 
     def test_functions(self):
         if not TEST_FUNCTIONS: return
@@ -95,19 +97,18 @@ class DeployAndTest:
             expected = test[2]
             command = f'sls invoke -f {name} -l'
             if params.strip(): command += f' --path {params.strip()}'
-            logs = self.execute_and_log(command, f'Testing "{name}" function with parameters  "{params}"...',
-                                        PRINT_FUNCTION_LOGS)
+            logs = self.execute_and_log(command, f'Testing "{name}" function with parameters  "{params}". '
+                                                 f'Expect: "{expected}"...', PRINT_FUNCTION_LOGS)
             Tests(name, logs, expected)
-            self.print_yellow(f"Elapsed ('{name}''): {self.get_duration(duration)}")
-        self.print_yellow(f'Elapsed (all tests): {self.get_duration(total_duration)}')
+            self.log_yellow(f"Elapsed ('{name}''): {self.get_duration(duration)}")
+        self.log_yellow(f'Elapsed (all tests): {self.get_duration(total_duration)}')
 
     def execute_and_log(self, execute, log, log_details = True):
-        self.print_yellow(log)
+        self.log_yellow(log)
         logs = []
         p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         stds = [p.stdout, p.stderr]
-
         for i, std in enumerate(stds):
             for line in iter(std.readline, b''):
                 log = line.decode("utf-8").replace('\n', '')
@@ -115,21 +116,10 @@ class DeployAndTest:
                 wrap_list = self.WRAPPER.wrap(text=log)
                 for wrap_line in wrap_list:
                     if log_details:
-                        if i == 0: print(wrap_line)
-                        else: print(f"{self.ANSI_COLORS.get('red')}{wrap_line}{self.ANSI_COLORS.get('default')}")
-
-        # for line in iter(p.stdout.readline, b''):
-        #     log = line.decode("utf-8").replace('\n', '')
-        #     logs.append(log)
-        #     wrap_list = self.WRAPPER.wrap(text=log)
-        #     for wrap_line in wrap_list:
-        #         if log_details: print(wrap_line)
-        # for line in iter(p.stderr.readline, b''):
-        #     log = line.decode("utf-8").replace('\n', '')
-        #     logs.append(log)
-        #     wrap_list = self.WRAPPER.wrap(text=log)
-        #     for wrap_line in wrap_list:
-        #         if log_details: print(f"{self.ANSI_COLORS.get('red')}{wrap_line}{self.ANSI_COLORS.get('default')}")
+                        if i == 0:
+                            self.log(wrap_line)
+                        else:
+                            self.log(f"{self.ANSI_COLORS.get('red')}{wrap_line}{self.ANSI_COLORS.get('default')}")
         p.stdout.close()
         p.wait()
         return logs
@@ -144,17 +134,23 @@ class DeployAndTest:
         """
         color, default = cls.ANSI_COLORS.get('magenta'), cls.ANSI_COLORS.get('default')
         size = cls.HEADER_SIZE
-        print('')
+        cls.log('')
         main = '{' + "".join([' ' for x in range(int(size/2)-int((len(content)/2)))]) + content
         main += "".join([' ' for x in range(size-len(main))]) + '}'
         upper_line = ' /' + "".join(['=' for x in range(len(main)-4)]) + '\\'
         lower_line = ' \\' + "".join(['=' for x in range(len(main)-4)]) + '/'
-        print(f'{color}{upper_line}\n{main}\n{lower_line}{default}')
-        print('')
+        cls.log(f'{color}{upper_line}\n{main}\n{lower_line}{default}')
+        cls.log('')
 
     @classmethod
-    def print_yellow(cls, msg):
-        print(f"{cls.ANSI_COLORS.get('yellow')}{msg}{cls.ANSI_COLORS.get('default')}")
+    def log_yellow(cls, msg):
+        msg = f"{cls.ANSI_COLORS.get('yellow')}{msg}{cls.ANSI_COLORS.get('default')}"
+        cls.log(msg)
+
+    @classmethod
+    def log(cls, msg):
+        print(msg)
+        cls.LOG_STORAGE.append(msg)
 
     @staticmethod
     def get_duration(start):
