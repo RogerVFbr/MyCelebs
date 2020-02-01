@@ -32,6 +32,7 @@ class DeployAndTest:
         'red': '\u001b[31m',
         'default': '\u001b[0m'
     }
+    LOG_STORAGE = []
 
     def __init__(self):
 
@@ -105,18 +106,30 @@ class DeployAndTest:
         logs = []
         p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
-        for line in iter(p.stdout.readline, b''):
-            log = line.decode("utf-8").replace('\n', '')
-            logs.append(log)
-            wrap_list = self.WRAPPER.wrap(text=log)
-            for wrap_line in wrap_list:
-                if log_details: print(wrap_line)
-        for line in iter(p.stderr.readline, b''):
-            log = line.decode("utf-8").replace('\n', '')
-            logs.append(log)
-            wrap_list = self.WRAPPER.wrap(text=log)
-            for wrap_line in wrap_list:
-                if log_details: print(f"{self.ANSI_COLORS.get('red')}{wrap_line}{self.ANSI_COLORS.get('default')}")
+        stds = [p.stdout, p.stderr]
+
+        for i, std in enumerate(stds):
+            for line in iter(std.readline, b''):
+                log = line.decode("utf-8").replace('\n', '')
+                logs.append(log)
+                wrap_list = self.WRAPPER.wrap(text=log)
+                for wrap_line in wrap_list:
+                    if log_details:
+                        if i == 0: print(wrap_line)
+                        else: print(f"{self.ANSI_COLORS.get('red')}{wrap_line}{self.ANSI_COLORS.get('default')}")
+
+        # for line in iter(p.stdout.readline, b''):
+        #     log = line.decode("utf-8").replace('\n', '')
+        #     logs.append(log)
+        #     wrap_list = self.WRAPPER.wrap(text=log)
+        #     for wrap_line in wrap_list:
+        #         if log_details: print(wrap_line)
+        # for line in iter(p.stderr.readline, b''):
+        #     log = line.decode("utf-8").replace('\n', '')
+        #     logs.append(log)
+        #     wrap_list = self.WRAPPER.wrap(text=log)
+        #     for wrap_line in wrap_list:
+        #         if log_details: print(f"{self.ANSI_COLORS.get('red')}{wrap_line}{self.ANSI_COLORS.get('default')}")
         p.stdout.close()
         p.wait()
         return logs
