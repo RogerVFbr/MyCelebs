@@ -26,6 +26,7 @@ class DeployAndTest:
     HEADER_SIZE = 60
     AUTO_SAVE_BRANCH = f'auto-save-{datetime.now().strftime("%Y-%m-%d")}'
     MAIN_WORKING_BRANCH = 'master'
+    LOG_SAVE_PATH = 'tests/logs'
     ANSI_COLORS = {
         'magenta': '\u001b[35m',
         'yellow': '\u001b[33m',
@@ -50,6 +51,8 @@ class DeployAndTest:
 
         # Print procedure time measuring
         self.log_yellow(f'Elapsed (test and deploy execution): {self.get_duration(duration)}')
+
+        self.save_logs()
 
     def service_deployment(self):
         if not DEPLOY: return
@@ -115,11 +118,11 @@ class DeployAndTest:
                 logs.append(log)
                 wrap_list = self.WRAPPER.wrap(text=log)
                 for wrap_line in wrap_list:
-                    if log_details:
-                        if i == 0:
-                            self.log(wrap_line)
-                        else:
-                            self.log(f"{self.ANSI_COLORS.get('red')}{wrap_line}{self.ANSI_COLORS.get('default')}")
+                    if i == 0:
+                        self.log(wrap_line, log_details)
+                    else:
+                        self.log(f"{self.ANSI_COLORS.get('red')}{wrap_line}{self.ANSI_COLORS.get('default')}",
+                                 log_details)
         p.stdout.close()
         p.wait()
         return logs
@@ -148,9 +151,19 @@ class DeployAndTest:
         cls.log(msg)
 
     @classmethod
-    def log(cls, msg):
-        print(msg)
+    def log(cls, msg, print_on_screen = True):
+        if print_on_screen: print(msg)
         cls.LOG_STORAGE.append(msg)
+
+    @classmethod
+    def save_logs(cls):
+        log_path_and_name = f'{cls.LOG_SAVE_PATH}/{datetime.now().strftime("%Y-%m-%d")}'
+        strings_to_replace = [v for k, v in cls.ANSI_COLORS.items()]
+        with open("output.txt", "w") as txt_file:
+            for line in cls.LOG_STORAGE:
+                for reps in strings_to_replace:
+                    line = line.replace(reps, '')
+                txt_file.write(" ".join(line) + "\n")  # works with any number of elements in a line
 
     @staticmethod
     def get_duration(start):
