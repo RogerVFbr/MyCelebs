@@ -157,13 +157,13 @@ class DeployAndTest:
 
     @classmethod
     def save_logs(cls):
-        log_path_and_name = f'{cls.LOG_SAVE_PATH}/{datetime.now().strftime("%Y-%m-%d")}'
+        log_path_and_name = f'{cls.LOG_SAVE_PATH}/{datetime.now().strftime("%Y-%m-%d")}.txt'
         strings_to_replace = [v for k, v in cls.ANSI_COLORS.items()]
-        with open("output.txt", "w") as txt_file:
+        with open(log_path_and_name, "w") as txt_file:
             for line in cls.LOG_STORAGE:
                 for reps in strings_to_replace:
                     line = line.replace(reps, '')
-                txt_file.write(" ".join(line) + "\n")  # works with any number of elements in a line
+                txt_file.write(''.join(line) + '\n')
 
     @staticmethod
     def get_duration(start):
