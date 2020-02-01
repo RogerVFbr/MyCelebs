@@ -52,7 +52,7 @@ class DeployAndTest:
             for function_name in FUNCTIONS_TO_DEPLOY:
                 self.execute_and_log(f'sls deploy function --function {function_name}',
                                      f"Deploy single function: '{function_name}'")
-        self.print_yellow(f'Elapsed: {time.time()-duration}')
+        self.print_yellow(f'Elapsed: {self.get_duration(duration)}')
 
     def git_procedures(self):
         if not UPDATE_REPOSITORY: return
@@ -75,7 +75,7 @@ class DeployAndTest:
                                  f"Switching back to local main branch '{self.MAIN_WORKING_BRANCH}'...")
             self.execute_and_log(f'git branch -D {self.AUTO_SAVE_BRANCH}',
                                  f"Deleting local auto-backup branch...")
-        self.print_yellow(f'Elapsed: {time.time()-duration}')
+        self.print_yellow(f'Elapsed: {self.get_duration(duration)}')
 
     def test_functions(self):
         if not TEST_FUNCTIONS: return
@@ -91,8 +91,8 @@ class DeployAndTest:
             logs = self.execute_and_log(command, f'Testing "{name}" function with parameters  "{params}"...',
                                         PRINT_FUNCTION_LOGS)
             Tests(name, logs, expected)
-            self.print_yellow(f"Elapsed ('{name}''): {time.time() - duration}")
-        self.print_yellow(f'Elapsed (all tests): {time.time()-total_duration}')
+            self.print_yellow(f"Elapsed ('{name}''): {self.get_duration(duration)}")
+        self.print_yellow(f'Elapsed (all tests): {self.get_duration(total_duration)}')
 
     def execute_and_log(self, execute, log, log_details = True):
         self.print_yellow(log)
