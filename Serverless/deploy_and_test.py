@@ -1,20 +1,21 @@
 import os, json, subprocess, textwrap
 from datetime import datetime
 
+from tests.tests import Tests
 
 DEPLOY = True
-FULL = False
+FULL = True
 FUNCTIONS_TO_DEPLOY = ['add-picture']
 
 UPDATE_REPOSITORY = True
-MAIN_BRANCH = False
+MAIN_BRANCH = True
 GIT_COMMIT_MESSAGE = 'Latest updates'
 
 TEST_FUNCTIONS = True
-LOG_TEST_DETAILS = True
+PRINT_FUNCTION_LOGS = False
 FUNCTIONS_TO_TEST = [
-    ('add-picture', 'tests/mock_add_picture_a.json'),
-    # ('add-picture', 'tests/mock_add_picture_b.json')
+    ('add-picture', 'tests/mock_add_picture_a.json', 200),
+    # ('add-picture', 'tests/mock_add_picture_b.json', 200)
 ]
 
 
@@ -73,32 +74,14 @@ class DeployAndTest:
         self.print_header('TESTING PROCEDURES')
         for test in FUNCTIONS_TO_TEST:
             name = test[0]
-            params = ''
-            try:
-                params = test[1]
-            except:
-                pass
+            params = test[1]
+            expected = test[2]
             command = f'sls invoke -f {name} -l'
             if params.strip(): command += f' --path {params.strip()}'
             logs = self.execute_and_log(command, f'Testing "{name}" function with parameters '
-                f'"{params}" (sls invoke -f <name> -l --path <params_path>)...', LOG_TEST_DETAILS)
+                f'"{params}" (sls invoke -f <name> -l --path <params_path>)...', PRINT_FUNCTION_LOGS)
 
-            if name == 'add-picture': self.test_add_picture(logs, params)
-
-    def test_add_picture(self, response, params):
-        dicts = self.parse_dicts_from_strings(''.join(response).replace('true', 'True').replace('false', 'False'))
-        if len(dicts) > 0:
-            response = dicts[0]
-            wrap_list = self.WRAPPER.wrap(text='Response: ' + str(response))
-            for line in wrap_list:
-                print(line)
-
-            http_status_code = response.get('statusCode')
-            if http_status_code == 200:
-                print('Test status: \u001b[32mSUCCESS\u001b[0m (Http status code is 200)')
-            else:
-                print('Test status: \u001b[31mFAILED\u001b[0m (Http status code is not 200)')
-
+            Tests(name, logs, expected)
 
     def execute_and_log(self, execute, log, log_details = True):
         print(f'\u001b[33m{log}\x1b[0m')
@@ -138,25 +121,6 @@ class DeployAndTest:
         lower_line = ' \\' + "".join(['=' for x in range(len(main)-4)]) + '/'
         print(f'{color}{upper_line}\n{main}\n{lower_line}{default}')
         print('')
-
-    @staticmethod
-    def parse_dicts_from_strings(value):
-        dicts = []
-        current_check = ''
-        open_bracers = 0
-        for x in value:
-            if x == '{':
-                open_bracers += 1
-            elif x == '}' and open_bracers > 0:
-                open_bracers -= 1
-                if open_bracers == 0:
-                    current_check += x
-                    dicts.append(eval(current_check))
-                    current_check = ''
-                    continue
-            if open_bracers > 0:
-                current_check += x
-        return dicts
 
 
 if __name__ == "__main__":
