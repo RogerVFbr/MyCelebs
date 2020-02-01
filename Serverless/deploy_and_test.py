@@ -4,7 +4,7 @@ from datetime import datetime
 from tests.tests import Tests
 
 DEPLOY = True
-FULL = True
+FULL = False
 FUNCTIONS_TO_DEPLOY = ['add-picture']
 
 UPDATE_REPOSITORY = True
@@ -41,12 +41,11 @@ class DeployAndTest:
         if not DEPLOY: return
         self.print_header('SERVICE DEPLOYMENT')
         if FULL:
-            self.execute_and_log('sls deploy', 'Deploy full service (sls deploy)...')
+            self.execute_and_log('sls deploy', 'Deploy full service...')
         else:
             for function_name in FUNCTIONS_TO_DEPLOY:
                 self.execute_and_log(f'sls deploy function --function {function_name}',
-                                     f"Deploy single function: '{function_name}' "
-                                     f"(sls deploy function --function <function_name>)")
+                                     f"Deploy single function: '{function_name}'")
 
     def git_procedures(self):
         if not UPDATE_REPOSITORY: return
@@ -78,8 +77,8 @@ class DeployAndTest:
             expected = test[2]
             command = f'sls invoke -f {name} -l'
             if params.strip(): command += f' --path {params.strip()}'
-            logs = self.execute_and_log(command, f'Testing "{name}" function with parameters '
-                f'"{params}" (sls invoke -f <name> -l --path <params_path>)...', PRINT_FUNCTION_LOGS)
+            logs = self.execute_and_log(command, f'Testing "{name}" function with parameters  "{params}"...',
+                                        PRINT_FUNCTION_LOGS)
 
             Tests(name, logs, expected)
 
