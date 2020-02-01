@@ -1,5 +1,6 @@
-import os, json, subprocess, textwrap
+import os, subprocess, textwrap
 from datetime import datetime
+import time
 
 from tests.tests import Tests
 
@@ -39,6 +40,7 @@ class DeployAndTest:
 
     def service_deployment(self):
         if not DEPLOY: return
+        duration = time.time()
         self.print_header('SERVICE DEPLOYMENT')
         if FULL:
             self.execute_and_log('sls deploy', 'Deploy full service...')
@@ -46,9 +48,11 @@ class DeployAndTest:
             for function_name in FUNCTIONS_TO_DEPLOY:
                 self.execute_and_log(f'sls deploy function --function {function_name}',
                                      f"Deploy single function: '{function_name}'")
+        self.print_yellow(f'Elapsed: {time.time()-duration}')
 
     def git_procedures(self):
         if not UPDATE_REPOSITORY: return
+        duration = time.time()
         self.print_header('UPDATE REPOSITORY')
         self.execute_and_log('git branch', 'Present current GIT branches...')
         self.execute_and_log('git add .', 'Execute GIT add all...')
@@ -67,11 +71,14 @@ class DeployAndTest:
                                  f"Switching back to local main branch '{self.MAIN_WORKING_BRANCH}'...")
             self.execute_and_log(f'git branch -D {self.AUTO_SAVE_BRANCH}',
                                  f"Deleting local auto-backup branch...")
+        self.print_yellow(f'Elapsed: {time.time()-duration}')
 
     def test_functions(self):
         if not TEST_FUNCTIONS: return
+        total_duration = time.time()
         self.print_header('TESTING PROCEDURES')
         for test in FUNCTIONS_TO_TEST:
+            duration = time.time()
             name = test[0]
             params = test[1]
             expected = test[2]
@@ -79,11 +86,12 @@ class DeployAndTest:
             if params.strip(): command += f' --path {params.strip()}'
             logs = self.execute_and_log(command, f'Testing "{name}" function with parameters  "{params}"...',
                                         PRINT_FUNCTION_LOGS)
-
             Tests(name, logs, expected)
+            self.print_yellow(f"Elapsed ('{name}''): {time.time() - duration}")
+        self.print_yellow(f'Elapsed (all tests): {time.time()-total_duration}')
 
     def execute_and_log(self, execute, log, log_details = True):
-        print(f'\u001b[33m{log}\x1b[0m')
+        self.print_yellow(log)
         logs = []
         p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
@@ -120,6 +128,10 @@ class DeployAndTest:
         lower_line = ' \\' + "".join(['=' for x in range(len(main)-4)]) + '/'
         print(f'{color}{upper_line}\n{main}\n{lower_line}{default}')
         print('')
+
+    @classmethod
+    def print_yellow(cls, msg):
+        print(f'\u001b[33m{msg}\x1b[0m')
 
 
 if __name__ == "__main__":
