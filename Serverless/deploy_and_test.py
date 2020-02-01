@@ -26,6 +26,12 @@ class DeployAndTest:
     HEADER_SIZE = 60
     AUTO_SAVE_BRANCH = f'auto-save-{datetime.now().strftime("%Y-%m-%d")}'
     MAIN_WORKING_BRANCH = 'master'
+    ANSI_COLORS = {
+        'magenta': '\u001b[35m',
+        'yellow': '\u001b[33m',
+        'red': '\u001b[31m',
+        'default': '\u001b[0m'
+    }
 
     def __init__(self):
 
@@ -110,7 +116,7 @@ class DeployAndTest:
             logs.append(log)
             wrap_list = self.WRAPPER.wrap(text=log)
             for wrap_line in wrap_list:
-                if log_details: print('\u001b[31m' + wrap_line + '\u001b[0m')
+                if log_details: print(f"{self.ANSI_COLORS.get('red')}{wrap_line}{self.ANSI_COLORS.get('default')}")
         p.stdout.close()
         p.wait()
         return logs
@@ -123,7 +129,7 @@ class DeployAndTest:
         :param size (int): Horizontal size of the header in number of characters.
         :return: None
         """
-        color, default = '\u001b[35m', '\u001b[0m'
+        color, default = cls.ANSI_COLORS.get('magenta'), cls.ANSI_COLORS.get('default')
         size = cls.HEADER_SIZE
         print('')
         main = '{' + "".join([' ' for x in range(int(size/2)-int((len(content)/2)))]) + content
@@ -135,7 +141,7 @@ class DeployAndTest:
 
     @classmethod
     def print_yellow(cls, msg):
-        print(f'\u001b[33m{msg}\x1b[0m')
+        print(f"{cls.ANSI_COLORS.get('yellow')}{msg}{cls.ANSI_COLORS.get('default')}")
 
     @staticmethod
     def get_duration(start):
