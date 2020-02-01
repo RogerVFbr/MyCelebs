@@ -164,9 +164,7 @@ class DeployAndTest:
             for line in cls.LOG_STORAGE:
                 for reps in strings_to_replace:
                     line = line.replace(reps, '')
-                wrap_list = cls.LOG_WRAPPER.wrap(text=line)
-                for wrap_line in wrap_list:
-                    txt_file.write(''.join(wrap_line) + '\n')
+                txt_file.write(''.join(line) + '\n')
 
     @staticmethod
     def get_duration(start):
