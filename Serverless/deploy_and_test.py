@@ -29,6 +29,8 @@ class DeployAndTest:
 
     def __init__(self):
 
+        duration = time.time()
+
         # Deploy service
         self.service_deployment()
 
@@ -37,6 +39,8 @@ class DeployAndTest:
 
         # Testing procedures
         self.test_functions()
+
+        self.print_yellow(f'Elapsed (test and deploy execution): {self.get_duration(duration)}')
 
     def service_deployment(self):
         if not DEPLOY: return
@@ -132,6 +136,10 @@ class DeployAndTest:
     @classmethod
     def print_yellow(cls, msg):
         print(f'\u001b[33m{msg}\x1b[0m')
+
+    @staticmethod
+    def get_duration(start):
+        return str(round(time.time() - start, 3)) + 's'
 
 
 if __name__ == "__main__":
