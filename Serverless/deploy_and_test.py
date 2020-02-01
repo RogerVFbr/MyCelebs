@@ -23,6 +23,7 @@ FUNCTIONS_TO_TEST = [
 class DeployAndTest:
 
     WRAPPER = textwrap.TextWrapper(width=250)
+    LOG_WRAPPER = textwrap.TextWrapper(width=150)
     HEADER_SIZE = 60
     AUTO_SAVE_BRANCH = f'auto-save-{datetime.now().strftime("%Y-%m-%d")}'
     MAIN_WORKING_BRANCH = 'master'
@@ -157,13 +158,15 @@ class DeployAndTest:
 
     @classmethod
     def save_logs(cls):
-        log_path_and_name = f'{cls.LOG_SAVE_PATH}/{datetime.now().strftime("%Y-%m-%d")}.txt'
+        log_path_and_name = f'{cls.LOG_SAVE_PATH}/{datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")}.txt'
         strings_to_replace = [v for k, v in cls.ANSI_COLORS.items()]
         with open(log_path_and_name, "w") as txt_file:
             for line in cls.LOG_STORAGE:
                 for reps in strings_to_replace:
                     line = line.replace(reps, '')
-                txt_file.write(''.join(line) + '\n')
+                wrap_list = cls.LOG_WRAPPER.wrap(text=line)
+                for wrap_line in wrap_list:
+                    txt_file.write(''.join(wrap_line) + '\n')
 
     @staticmethod
     def get_duration(start):
