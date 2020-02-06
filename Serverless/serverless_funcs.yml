@@ -12,23 +12,23 @@ add-picture:
           schema:
             application/json: ${file(http_add_picture/validation_schema/add_picture_schema.json)}
 
-celeb-recognition:
-  handler: sqs_celebrity_recognition/handler.celeb_recognition
-  events:
-    - sqs:
-        arn:
-          Fn::GetAtt:
-            - AddPictureQueue
-            - Arn
-        batchSize: 1
+#celeb-recognition:
+#  handler: sqs_celebrity_recognition/handler.celeb_recognition
+#  events:
+#    - sqs:
+#        arn:
+#          Fn::GetAtt:
+#            - AddPictureQueue
+#            - Arn
+#        batchSize: 1
 
-generate-thumbnail:
-  handler: s3_generate_thumbnail/handler.generate_thumbnail
-  events:
-    - s3:
-        bucket: ${self:provider.environment.BUCKET_NAME}
-        event: s3:ObjectCreated:*
-        existing: true
+#generate-thumbnail:
+#  handler: s3_generate_thumbnail/handler.generate_thumbnail
+#  events:
+#    - s3:
+#        bucket: ${self:provider.environment.BUCKET_NAME}
+#        event: s3:ObjectCreated:*
+#        existing: true
 
 
 

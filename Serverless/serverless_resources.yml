@@ -41,10 +41,10 @@ AddPictureQueue:
   Properties:
     QueueName: ${self:provider.environment.ADD_PICTURE_QUEUE_NAME}
 
-WebScrapQueue:
-  Type: "AWS::SQS::Queue"
-  Properties:
-    QueueName: ${self:provider.environment.WEB_SCRAP_QUEUE_NAME}
+#WebScrapQueue:
+#  Type: "AWS::SQS::Queue"
+#  Properties:
+#    QueueName: ${self:provider.environment.WEB_SCRAP_QUEUE_NAME}
 
 PicturesTable:
   Type: AWS::DynamoDB::Table

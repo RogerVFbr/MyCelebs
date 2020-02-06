@@ -103,7 +103,11 @@ class DeployAndTest:
             if params.strip(): command += f' --path {params.strip()}'
             logs = self.execute_and_log(command, f'Testing "{name}" function with parameters  "{params}". '
                                                  f'Expect: "{expected}"...', PRINT_FUNCTION_LOGS)
-            Tests(name, logs, expected)
+            status, logs = Tests.test(name, logs, expected)
+            for log in logs:
+                wrap_list = self.WRAPPER.wrap(text=log)
+                for line in wrap_list:
+                    self.log(line)
             self.log_yellow(f"Elapsed ('{name}''): {self.get_duration(duration)}")
         self.log_yellow(f'Elapsed (all tests): {self.get_duration(total_duration)}')
 

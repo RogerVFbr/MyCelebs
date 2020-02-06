@@ -1,35 +1,34 @@
-import textwrap
-
-
 class Tests:
 
-    WRAPPER = textwrap.TextWrapper(width=250)
-
-    def __init__(self, function_name, response, expected):
-        self.tests_map = {
-            'add-picture': self.add_picture
+    @classmethod
+    def test(cls, function_name, response, expected):
+        tests_map = {
+            'add-picture': cls.add_picture
         }
 
-        func = self.tests_map.get(function_name)
+        func = tests_map.get(function_name)
         if func:
-            func(response, expected)
+            return func(response, expected)
         else:
             print('Could not find function.')
+            return False, []
 
     @classmethod
     def add_picture(cls, response, expected):
         dicts = cls.__parse_dicts_from_strings(''.join(response).replace('true', 'True').replace('false', 'False'))
+        logs = []
         if len(dicts) > 0:
             response = dicts[0]
-            wrap_list = cls.WRAPPER.wrap(text='Response: ' + str(response))
-            for line in wrap_list:
-                print(line)
-
+            logs.append(str(response))
             http_status_code = response.get('statusCode')
             if http_status_code == expected:
-                print(f'Test status: \u001b[32mSUCCESS\u001b[0m (Http status code is {expected})')
+                logs.append(f'Test status: \u001b[32mSUCCESS\u001b[0m (Http status code is {expected})')
+                return True, logs
             else:
-                print(f'Test status: \u001b[31mFAILED\u001b[0m (Http status code is not {expected})')
+                logs.append(f'Test status: \u001b[31mFAILED\u001b[0m (Http status code is not {expected})')
+                return False, logs
+
+        return False, logs
 
     @staticmethod
     def __parse_dicts_from_strings(value):
