@@ -1,11 +1,10 @@
-import os, subprocess, textwrap
+import os, subprocess, textwrap, time
 from datetime import datetime
-import time
 
 from tests.tests import Tests
 
 DEPLOY = True
-FULL = False
+FULL = True
 FUNCTIONS_TO_DEPLOY = ['add-picture']
 
 UPDATE_REPOSITORY = True
