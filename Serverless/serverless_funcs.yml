@@ -1,7 +1,7 @@
 add-picture:
   handler: http_add_picture/handler.add_picture
   layers:
-    - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:8
+    - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:9
   events:
     - http:
         path: add_picture

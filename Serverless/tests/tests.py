@@ -28,6 +28,7 @@ class Tests:
                 logs.append(f'Test status: \u001b[31mFAILED\u001b[0m (Http status code is not {expected})')
                 return False, logs
 
+        logs.append(f'Test status: \u001b[31mFAILED\u001b[0m (Unable to extract response dictionary)')
         return False, logs
 
     @staticmethod
