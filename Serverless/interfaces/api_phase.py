@@ -119,8 +119,7 @@ class APIPhase(ABC):
 
         ).__dict__
 
-    @staticmethod
-    def get_id(invocation_id) -> str:
+    def get_id(self, invocation_id) -> str:
         """
         Provides unique invocation identifier if needed.
         :param invocation_id: string. Invocation Id.
@@ -133,7 +132,9 @@ class APIPhase(ABC):
 
         # If none has been provided, return a new one.
         else:
-            return datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
+            invocation_id = datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
+            self.log(f"Generating new invocation ID: {invocation_id}")
+            return invocation_id
 
     def log(self, msg):
         """

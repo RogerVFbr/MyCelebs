@@ -20,8 +20,11 @@ class Validation(APIPhase):
         self.file_name = None                       # :str: Image stored file name.
         self.new_entry = {}                         # :dict: Acquired log data.
 
+        invocation_id = self.event.get('Records', [{}])[0].get('body', {}).get('time')
+        print(invocation_id)
+
         # Initializes APIPhase superclass parameters and procedures
-        super(Validation, self).__init__(prefix='VL', phase_name='Validation', invocation_id=event.get('time'))
+        super(Validation, self).__init__(prefix='VL', phase_name='Validation', invocation_id=invocation_id)
 
     def run(self) -> bool:
         """
