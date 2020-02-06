@@ -1,26 +1,23 @@
 from interfaces.api_phase import APIPhase
-from services.aws_sqs import AWSSQS
 
 
-class DeleteLog(APIPhase):
+class DeleteData(APIPhase):
     """
     Log deletion object, responsible for deleting logs from selected database or service.
     """
 
-    def __init__(self, log_id: str, invocation_id: str):
+    def __init__(self, repository, log_id: str, invocation_id: str):
         """
         Constructor of the log deletion object, stores provided data and instantiates log repository.
         :param log_id: string containing the identification code of the log to be deleted.
         :param invocation_id: string containing id of current cloud function invocation to be to be used by API metrics.
         """
 
-        queue_url = self.env.QUEUE_BASE_URL                            # :str: Queue base url.
-        queue_name = self.env.ADD_PICTURE_QUEUE_NAME                   # :str: Queue name.
-        self.repository = AWSSQS(queue_url, queue_name)                # :AWSSQS: log repository to be accessed.
+        self.repository = repository
         self.log_id = log_id                                           # :str: id of the log to be deleted.
 
         # Initializes APIPhase superclass parameters and procedures
-        super(DeleteLog, self).__init__(prefix='DL', phase_name='Delete queue log', invocation_id=invocation_id)
+        super(DeleteData, self).__init__(prefix='DL', phase_name='Delete queue log', invocation_id=invocation_id)
 
     def run(self):
         """

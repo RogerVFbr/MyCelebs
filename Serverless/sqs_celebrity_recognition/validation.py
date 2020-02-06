@@ -16,13 +16,12 @@ class Validation(APIPhase):
         """
 
         self.event = event                          # :dict: AWS Event object.
-        self.log_id = None                          # :str: Queue receipt handle (log identifier) for later deletion.
         self.bucket_name = self.env.BUCKET_NAME     # :str: Image storage bucket name.
         self.file_name = None                       # :str: Image stored file name.
         self.new_entry = {}                         # :dict: Acquired log data.
 
         # Initializes APIPhase superclass parameters and procedures
-        super(Validation, self).__init__(prefix='VL', phase_name='Validation')
+        super(Validation, self).__init__(prefix='VL', phase_name='Validation', invocation_id=event.get('time'))
 
     def run(self) -> bool:
         """
@@ -34,6 +33,7 @@ class Validation(APIPhase):
         if not self.__extract_info_from_body(): return False
 
         # Procedure successful
+        self.log(f"Working on original invocation ID: {self.invocation_id}")
         return True
 
     def __extract_info_from_body(self) -> bool:
@@ -44,8 +44,7 @@ class Validation(APIPhase):
 
         # Extracts information from newly acquired request object.
         try:
-            self.new_entry = json.loads(self.event.get('Records')[0].get('body'))
-            self.log_id = self.event.get('Records')[0].get('receiptHandle')
+            self.new_entry = json.loads(self.event.get('Records', [{}])[0].get('body', {}))
             self.file_name = self.new_entry.get('file_name', 'N.A.')
         except Exception as e:
             self.log(self.rsc.INEXISTENT_NEW_ENTRY.format(str(e)))

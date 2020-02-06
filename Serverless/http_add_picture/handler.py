@@ -1,8 +1,9 @@
 from http_add_picture.validation import Validation
 from http_add_picture.image_pre_processing import ImagePreProcessing
 from http_add_picture.save_image import SaveImage
-from http_add_picture.save_log import SaveLog
-from interfaces.api_phase import APIPhase
+from http_add_picture.save_data import SaveData
+from interfaces.api_phase import APIPhase as ap
+from services.aws_sqs import AWSSQS
 
 
 def add_picture(event, context):
@@ -48,16 +49,19 @@ def add_picture(event, context):
     }
 
     # Save log
-    sl = SaveLog(data_to_be_persisted, vl.invocation_id)
+    sl = SaveData(AWSSQS(ap.env.QUEUE_BASE_URL, ap.env.ADD_PICTURE_QUEUE_NAME), data_to_be_persisted, vl.invocation_id)
     if not sl.status:
         return sl.failed_return_object
 
+    print(ap.rsc.SUCCESSFUL_CLOUD_FUNCTION_EXECUTION.format(vl.invocation_id))
+
     # Return success object
-    return APIPhase.get_return_object(
+    return ap.get_return_object(
         status_code=200,
         response_code=0,
         msg_dev='Success',
         msg_user='Success',
         img_meta_data=pp.img_meta_data.__dict__,
         api_metrics=sl.get_metrics()
+        # api_metrics=si.get_metrics()
     )

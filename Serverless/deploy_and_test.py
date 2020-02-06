@@ -1,20 +1,19 @@
 import os, subprocess, textwrap, time
 from datetime import datetime
-
 from tests.tests import Tests
 
 DEPLOY = True
 FULL = False
-FUNCTIONS_TO_DEPLOY = ['add-picture']
+FUNCTIONS_TO_DEPLOY = ['add-picture', 'celeb-recognition']
 
 UPDATE_REPOSITORY = True
 MAIN_BRANCH = True
-GIT_COMMIT_MESSAGE = 'Latest updates'
+GIT_COMMIT_MESSAGE = 'Solving multiple SQS trigger executions.'
 
 TEST_FUNCTIONS = True
-PRINT_FUNCTION_LOGS = False
+PRINT_LOGS_ON_SCREEN = False
 FUNCTIONS_TO_TEST = [
-    ('add-picture', 'tests/mock_add_picture_a.json', 200),
+    ('add-picture', 'tests/mock_add_picture_a.json', 200, ['celeb-recognition']),
     # ('add-picture', 'tests/mock_add_picture_b.json', 200)
 ]
 
@@ -31,6 +30,7 @@ class DeployAndTest:
         'magenta': '\u001b[35m',
         'yellow': '\u001b[33m',
         'red': '\u001b[31m',
+        'green': '\u001b[32m',
         'default': '\u001b[0m'
     }
     LOG_STORAGE = []
@@ -50,7 +50,7 @@ class DeployAndTest:
         self.test_functions()
 
         # Print procedure time measuring
-        self.log_yellow(f'Elapsed (test and deploy execution): {self.get_duration(duration)}')
+        self.log_yellow(f'Elapsed (deploy and test execution): {self.get_duration(duration)}')
 
         self.save_logs()
 
@@ -63,7 +63,7 @@ class DeployAndTest:
         else:
             for function_name in FUNCTIONS_TO_DEPLOY:
                 self.execute_and_log(f'sls deploy function --function {function_name}',
-                                     f"Deploy single function: '{function_name}'")
+                                     f"Deploy function: '{function_name}'")
         self.log_yellow(f'Elapsed: {self.get_duration(duration)}')
 
     def git_procedures(self):
@@ -100,23 +100,22 @@ class DeployAndTest:
             expected = test[2]
             command = f'sls invoke -f {name} -l'
             if params.strip(): command += f' --path {params.strip()}'
-            logs = self.execute_and_log(command, f'Testing "{name}" function with parameters  "{params}". '
-                                                 f'Expect: "{expected}"...', PRINT_FUNCTION_LOGS)
+            logs = self.execute_and_log(command, f'Testing "{name}" @ params "{params}". '
+                                                 f'Expect: "{expected}"...', PRINT_LOGS_ON_SCREEN)
             status, logs = Tests.test(name, logs, expected)
             for log in logs:
                 wrap_list = self.WRAPPER.wrap(text=log)
                 for line in wrap_list:
                     self.log(line)
-            self.log_yellow(f"Elapsed ('{name}''): {self.get_duration(duration)}")
+            self.log_yellow(f"Elapsed ('{name}'): {self.get_duration(duration)}")
         self.log_yellow(f'Elapsed (all tests): {self.get_duration(total_duration)}')
 
     def execute_and_log(self, execute, log, log_details = True):
-        self.log_yellow(log)
+        self.log_yellow(f"{datetime.utcnow().strftime('%H:%M:%S')} UTC - {log} ({execute})")
         logs = []
         p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
-        stds = [p.stdout, p.stderr]
-        for i, std in enumerate(stds):
+        for i, std in enumerate([p.stdout, p.stderr]):
             for line in iter(std.readline, b''):
                 log = line.decode("utf-8").replace('\n', '')
                 logs.append(log)
@@ -130,6 +129,30 @@ class DeployAndTest:
         p.stdout.close()
         p.wait()
         return logs
+
+    @classmethod
+    def log_yellow(cls, msg):
+        msg = f"{cls.ANSI_COLORS.get('yellow')}{msg}{cls.ANSI_COLORS.get('default')}"
+        cls.log(msg)
+
+    @classmethod
+    def log(cls, msg, print_on_screen=True):
+        if print_on_screen: print(msg)
+        cls.LOG_STORAGE.append(msg)
+
+    @classmethod
+    def save_logs(cls):
+        log_path_and_name = f'{cls.LOG_SAVE_PATH}/{datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")}.txt'
+        strings_to_replace = [v for k, v in cls.ANSI_COLORS.items()]
+        with open(log_path_and_name, "w") as txt_file:
+            for line in cls.LOG_STORAGE:
+                for reps in strings_to_replace:
+                    line = line.replace(reps, '')
+                txt_file.write(''.join(line) + '\n')
+
+    @staticmethod
+    def get_duration(start):
+        return str(round(time.time() - start, 3)) + 's'
 
     @classmethod
     def print_header(cls, content):
@@ -148,30 +171,6 @@ class DeployAndTest:
         lower_line = ' \\' + "".join(['=' for x in range(len(main)-4)]) + '/'
         cls.log(f'{color}{upper_line}\n{main}\n{lower_line}{default}')
         cls.log('')
-
-    @classmethod
-    def log_yellow(cls, msg):
-        msg = f"{cls.ANSI_COLORS.get('yellow')}{msg}{cls.ANSI_COLORS.get('default')}"
-        cls.log(msg)
-
-    @classmethod
-    def log(cls, msg, print_on_screen = True):
-        if print_on_screen: print(msg)
-        cls.LOG_STORAGE.append(msg)
-
-    @classmethod
-    def save_logs(cls):
-        log_path_and_name = f'{cls.LOG_SAVE_PATH}/{datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")}.txt'
-        strings_to_replace = [v for k, v in cls.ANSI_COLORS.items()]
-        with open(log_path_and_name, "w") as txt_file:
-            for line in cls.LOG_STORAGE:
-                for reps in strings_to_replace:
-                    line = line.replace(reps, '')
-                txt_file.write(''.join(line) + '\n')
-
-    @staticmethod
-    def get_duration(start):
-        return str(round(time.time() - start, 3)) + 's'
 
 
 if __name__ == "__main__":

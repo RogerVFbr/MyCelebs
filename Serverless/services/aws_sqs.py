@@ -1,6 +1,4 @@
-import json
-
-import boto3
+import json, boto3
 
 
 class AWSSQS:
