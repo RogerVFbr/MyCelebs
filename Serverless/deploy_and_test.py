@@ -4,7 +4,7 @@ from datetime import datetime
 from tests.tests import Tests
 
 DEPLOY = True
-FULL = True
+FULL = False
 FUNCTIONS_TO_DEPLOY = ['add-picture']
 
 UPDATE_REPOSITORY = True
