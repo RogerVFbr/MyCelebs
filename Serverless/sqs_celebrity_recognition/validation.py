@@ -20,7 +20,7 @@ class Validation(APIPhase):
         self.file_name = None                       # :str: Image stored file name.
         self.new_entry = {}                         # :dict: Acquired log data.
 
-        invocation_id = self.event.get('Records', [{}])[0].get('body', {}).get('time')
+        invocation_id = json.loads(self.event.get('Records', [{}])[0].get('body', {})).get('time')
         print(invocation_id)
 
         # Initializes APIPhase superclass parameters and procedures
