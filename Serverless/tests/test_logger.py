@@ -1,10 +1,13 @@
+import textwrap
+
 from datetime import datetime
 
 
 class TestLogger:
 
-    LOG_SAVE_PATH = 'logs'
+    LOG_SAVE_PATH = 'tests/logs'
     HEADER_SIZE = 60
+    WRAPPER = textwrap.TextWrapper(width=150)
     LOG_STORAGE = []
     ANSI_COLORS = {
         'magenta': '\u001b[35m',
@@ -15,14 +18,25 @@ class TestLogger:
     }
 
     @classmethod
-    def log_yellow(cls, msg):
+    def log_yellow(cls, msg, print_on_screen=True):
         msg = f"{cls.ANSI_COLORS.get('yellow')}{msg}{cls.ANSI_COLORS.get('default')}"
-        cls.log(msg)
+        cls.log(msg, print_on_screen)
 
     @classmethod
-    def log(cls, msg, print_on_screen=True):
-        if print_on_screen: print(msg)
-        cls.LOG_STORAGE.append(msg)
+    def log_red(cls, msg, print_on_screen=True):
+        msg = f"{cls.ANSI_COLORS.get('red')}{msg}{cls.ANSI_COLORS.get('default')}"
+        cls.log(msg, print_on_screen)
+
+    @classmethod
+    def log(cls, msg, print_on_screen=True, ignore_wrap=False):
+        if ignore_wrap:
+            if print_on_screen: print(msg)
+            cls.LOG_STORAGE.append(msg)
+        else:
+            wrap_list = cls.WRAPPER.wrap(text=msg)
+            for wrap_line in wrap_list:
+                if print_on_screen: print(wrap_line)
+                cls.LOG_STORAGE.append(wrap_line)
 
     @classmethod
     def save_logs(cls):
@@ -44,10 +58,10 @@ class TestLogger:
         """
         color, default = cls.ANSI_COLORS.get('magenta'), cls.ANSI_COLORS.get('default')
         size = cls.HEADER_SIZE
-        cls.log('')
+        cls.log('', ignore_wrap=True)
         main = '{' + "".join([' ' for x in range(int(size/2)-int((len(content)/2)))]) + content
         main += "".join([' ' for x in range(size-len(main))]) + '}'
         upper_line = ' /' + "".join(['=' for x in range(len(main)-4)]) + '\\'
         lower_line = ' \\' + "".join(['=' for x in range(len(main)-4)]) + '/'
-        cls.log(f'{color}{upper_line}\n{main}\n{lower_line}{default}')
-        cls.log('')
+        cls.log(f'{color}{upper_line}\n{main}\n{lower_line}{default}', ignore_wrap=True)
+        cls.log('', ignore_wrap=True)
