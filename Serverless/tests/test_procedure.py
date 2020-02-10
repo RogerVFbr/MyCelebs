@@ -126,7 +126,10 @@ class TestProcedure:
             if log_raw:
                 for log_line in log_raw:
                     tl.log(f"{log_indent_test}{log_line}", print_on_screen=print_on_screen)
-                tl.log('.', print_on_screen=print_on_screen)
+            else:
+                tl.log(f"{log_indent_test}No log captured.", print_on_screen=print_on_screen)
+            tl.log('.', print_on_screen=print_on_screen)
+
 
             tl.log(f"{log_indent_test}Execution confirmation. {self.__get_status_string(execution_confirmation)}")
 
