@@ -123,9 +123,10 @@ class TestProcedure:
             execution_confirmation = results.get('execution_confirmation')
             print_on_screen = self.PRINT_FUNCTION_LOGS_ON_SCREEN if execution_confirmation else True
 
-            for log_line in log_raw:
-                tl.log(f"{log_indent_test}{log_line}", print_on_screen=print_on_screen)
-            tl.log('.', print_on_screen=print_on_screen)
+            if log_raw:
+                for log_line in log_raw:
+                    tl.log(f"{log_indent_test}{log_line}", print_on_screen=print_on_screen)
+                tl.log('.', print_on_screen=print_on_screen)
 
             tl.log(f"{log_indent_test}Execution confirmation. {self.__get_status_string(execution_confirmation)}")
 
@@ -166,7 +167,7 @@ class TestProcedure:
                 if self.timeout_flag:
                     tl.log(msg_disabling)
                     return
-                if self.timeout_flag or self.__parse_log(log_raw, self.test_name, expected):
+                if self.__parse_log(log_raw, self.test_name, expected):
                     tl.log(msg_disabling)
                     return
                 else:
