@@ -6,7 +6,7 @@ from tests.tests import Tests
 from tests.test_logger import TestLogger as tl
 
 DEPLOY = True
-FULL = True
+FULL = False
 FUNCTIONS_TO_DEPLOY = ['add-picture', 'celeb-recognition']
 
 UPDATE_REPOSITORY = True

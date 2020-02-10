@@ -13,6 +13,8 @@ def add_picture(event, context):
     print('| . . . . . . . .ADD PICTURE . . . . . . . |')
     print('+------------------------------------------+')
 
+    lklkj
+
     # Execute validation phase
     vl = Validation(event)
     if not vl.status:
