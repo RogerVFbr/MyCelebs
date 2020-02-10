@@ -7,7 +7,7 @@ class TestLogger:
 
     LOG_SAVE_PATH = 'tests/logs'
     HEADER_SIZE = 60
-    WRAPPER = textwrap.TextWrapper(width=250)
+    WRAPPER = textwrap.TextWrapper(width=80)
     LOG_STORAGE = []
     ANSI_COLORS = {
         'magenta': '\u001b[35m',
