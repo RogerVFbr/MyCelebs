@@ -9,14 +9,13 @@ class TestProcedure:
     TEST_CONFIG_PATH = 'tests/test_configs.json'
     REQUIRED_TEST_PROPERTIES = {'log_name', 'function_name', 'params', 'expected'}
     REQUIRED_EXPECTED_RESPONSE_PROPERTIES = {'function_name', 'execution_confirmation', 'pick_by', 'assert'}
-    PRINT_FUNCTION_LOGS_ON_SCREEN = False
     LOG_MONITORING_TIMEOUT = 30
     LOG_START_IDENTIFIER = 'START RequestId:'
     LOG_END_IDENTIFIER = 'XRAY TraceId:'
     TEST_PASSED_STR = 'PASSED'
     TEST_FAILED_STR = 'FAILED'
 
-    def __init__(self, required_tests):
+    def __init__(self, required_tests, print_on_screen):
         self.required_tests = required_tests
         self.test_configs = None
         self.test_name = None
@@ -28,15 +27,18 @@ class TestProcedure:
         self.timeout_flag = False
         self.test_results = OrderedDict()
 
+        self.PRINT_FUNCTION_LOGS_ON_SCREEN = print_on_screen
+
         if not self.__parse_test_configs(): return
-        if not self.__run_tests(): return
+        self.__run_tests()
 
     def __parse_test_configs(self):
         try:
             with open(self.TEST_CONFIG_PATH, 'r') as f:
                 self.test_configs = json.load(f)
         except Exception as e:
-            tl.log_error(f"Unable to find test configuration JSON file at given path: '{self.TEST_CONFIG_PATH}'")
+            tl.log_error(f"Unable to locate or read test configuration JSON file at given path: "
+                         f"'{self.TEST_CONFIG_PATH}'")
             return False
 
         available_tests = self.test_configs.keys()
