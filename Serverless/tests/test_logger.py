@@ -57,7 +57,7 @@ class TestLogger:
 
     @classmethod
     def save_logs(cls):
-        log_path_and_name = f'{cls.LOG_SAVE_PATH}/{datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")}.txt'
+        log_path_and_name = f'{cls.LOG_SAVE_PATH}/{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.txt'
         strings_to_replace = [v for k, v in cls.ANSI_COLORS.items()]
         with open(log_path_and_name, "w") as txt_file:
             for line in cls.LOG_STORAGE:
