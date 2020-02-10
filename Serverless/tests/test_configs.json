@@ -1,0 +1,19 @@
+{
+  "add-picture-integration": {
+    "log_name": "Add.Pic. Integration",
+    "function_name": "add-picture",
+    "params": "tests/mock_add_picture_a.json",
+    "expected": [
+      {
+        "function_name": "add-picture",
+        "execution_confirmation": "RETURN - ",
+        "pick_by": "test_id_1",
+        "assert": [
+          {
+            "statusCode": 200
+          }
+        ]
+      }
+    ]
+  }
+}

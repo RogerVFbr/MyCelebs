@@ -145,6 +145,15 @@ class APIPhase(ABC):
 
         print(f'{self.prefix} - {msg}')
 
+    def log_invocation_id(self):
+        """
+        Logs current invocation id.
+        :param msg: string. Message to be logged.
+        :return: void.
+        """
+
+        self.log(f'Current invocation ID is: {self.invocation_id}')
+
     def start_metrics(self, metric):
         """
         Initiates time measurement of a particular phase of the API execution.

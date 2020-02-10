@@ -49,9 +49,9 @@ def add_picture(event, context):
     }
 
     # Save log
-    sl = SaveData(AWSSQS(ap.env.QUEUE_BASE_URL, ap.env.ADD_PICTURE_QUEUE_NAME), data_to_be_persisted, vl.invocation_id)
-    if not sl.status:
-        return sl.failed_return_object
+    # sl = SaveData(AWSSQS(ap.env.QUEUE_BASE_URL, ap.env.ADD_PICTURE_QUEUE_NAME), data_to_be_persisted, vl.invocation_id)
+    # if not sl.status:
+    #     return sl.failed_return_object
 
     print(ap.rsc.SUCCESSFUL_CLOUD_FUNCTION_EXECUTION.format(vl.invocation_id))
 
@@ -62,6 +62,6 @@ def add_picture(event, context):
         msg_dev='Success',
         msg_user='Success',
         img_meta_data=pp.img_meta_data.__dict__,
-        api_metrics=sl.get_metrics()
-        # api_metrics=si.get_metrics()
+        # api_metrics=sl.get_metrics()
+        api_metrics=si.get_metrics()
     )

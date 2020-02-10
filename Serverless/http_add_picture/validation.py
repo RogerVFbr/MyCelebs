@@ -23,7 +23,8 @@ class Validation(APIPhase):
         self.img_bytes = None               # :bytes: Image in bytes form, product of base64.b64decode().
 
         # Initializes APIPhase superclass parameters and procedures
-        super(Validation, self).__init__(prefix='VL', phase_name='Validation')
+        invocation_id = event.get('invocation_id')
+        super(Validation, self).__init__(prefix='VL', phase_name='Validation', invocation_id=invocation_id)
 
     def run(self) -> bool:
         """

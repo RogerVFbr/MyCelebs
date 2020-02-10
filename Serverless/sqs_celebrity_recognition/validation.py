@@ -36,7 +36,6 @@ class Validation(APIPhase):
         if not self.__extract_info_from_body(): return False
 
         # Procedure successful
-        self.log(f"Working on original invocation ID: {self.invocation_id}")
         return True
 
     def __extract_info_from_body(self) -> bool:

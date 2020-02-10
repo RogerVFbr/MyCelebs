@@ -7,7 +7,7 @@ class TestLogger:
 
     LOG_SAVE_PATH = 'tests/logs'
     HEADER_SIZE = 60
-    WRAPPER = textwrap.TextWrapper(width=150)
+    WRAPPER = textwrap.TextWrapper(width=250)
     LOG_STORAGE = []
     ANSI_COLORS = {
         'magenta': '\u001b[35m',
@@ -18,14 +18,31 @@ class TestLogger:
     }
 
     @classmethod
-    def log_yellow(cls, msg, print_on_screen=True):
-        msg = f"{cls.ANSI_COLORS.get('yellow')}{msg}{cls.ANSI_COLORS.get('default')}"
+    def log_alert(cls, msg, print_on_screen=True):
+        msg = f"{cls.ANSI_COLORS.get('yellow')}{datetime.utcnow().strftime('%H:%M:%S')}:UTC - " \
+              f"{msg}{cls.ANSI_COLORS.get('default')}"
         cls.log(msg, print_on_screen)
 
     @classmethod
-    def log_red(cls, msg, print_on_screen=True):
-        msg = f"{cls.ANSI_COLORS.get('red')}{msg}{cls.ANSI_COLORS.get('default')}"
+    def log_error(cls, msg, print_on_screen=True):
+        msg = f"{cls.ANSI_COLORS.get('red')}{datetime.utcnow().strftime('%H:%M:%S')}:UTC - " \
+              f"{msg}{cls.ANSI_COLORS.get('default')}"
         cls.log(msg, print_on_screen)
+
+    @classmethod
+    def paint_red(cls, msg):
+        return f"{cls.ANSI_COLORS.get('red')}{msg}{cls.ANSI_COLORS.get('default')}"
+
+    @classmethod
+    def paint_green(cls, msg):
+        return f"{cls.ANSI_COLORS.get('green')}{msg}{cls.ANSI_COLORS.get('default')}"
+
+    @classmethod
+    def paint_status(cls, msg, success):
+        if success:
+            return f"{cls.ANSI_COLORS.get('green')}{msg}{cls.ANSI_COLORS.get('default')}"
+        else:
+            return f"{cls.ANSI_COLORS.get('red')}{msg}{cls.ANSI_COLORS.get('default')}"
 
     @classmethod
     def log(cls, msg, print_on_screen=True, ignore_wrap=False):
