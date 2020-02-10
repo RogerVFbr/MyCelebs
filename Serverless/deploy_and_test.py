@@ -10,7 +10,7 @@ FULL = False
 FUNCTIONS_TO_DEPLOY = ['add-picture', 'celeb-recognition']
 
 UPDATE_REPOSITORY = True
-MAIN_BRANCH = False
+MAIN_BRANCH = True
 GIT_COMMIT_MESSAGE = 'Solving multiple SQS trigger executions.'
 
 TEST_FUNCTIONS = True
