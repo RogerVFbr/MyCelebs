@@ -120,17 +120,19 @@ class TestProcedure:
             tl.log(f"{log_indent_title}-> Function '{function_name}'")
             log_raw = results.get('log_raw')
 
-            for log_line in log_raw:
-                tl.log(f"{log_indent_test}{log_line}", print_on_screen=self.PRINT_FUNCTION_LOGS_ON_SCREEN)
-            tl.log('.', print_on_screen=self.PRINT_FUNCTION_LOGS_ON_SCREEN)
-
             execution_confirmation = results.get('execution_confirmation')
+            print_on_screen = self.PRINT_FUNCTION_LOGS_ON_SCREEN if execution_confirmation else True
+
+            for log_line in log_raw:
+                tl.log(f"{log_indent_test}{log_line}", print_on_screen=print_on_screen)
+            tl.log('.', print_on_screen=print_on_screen)
+
             tl.log(f"{log_indent_test}Execution confirmation. {self.__get_status_string(execution_confirmation)}")
 
             # tl.log(str(results.items()))
-            for k, v in list(results.items())[2:]:
+            for assertion, status in list(results.items())[2:]:
                 # tl.log(f"{k} {v}")
-                tl.log(f"{log_indent_test}{k} {self.__get_status_string(v)}")
+                tl.log(f"{log_indent_test}{assertion} {self.__get_status_string(status)}")
 
             tl.log('.')
 
@@ -142,7 +144,7 @@ class TestProcedure:
         if status:
             return tl.paint_status(self.TEST_PASSED_STR, True)
         else:
-            return tl.paint_status(self.TEST_FAILED_STR, True)
+            return tl.paint_status(self.TEST_FAILED_STR, False)
 
     def __monitor_function_log(self, expected):
         function_name = expected.get('function_name')
@@ -162,7 +164,7 @@ class TestProcedure:
                 log_open = False
                 msg_disabling = f"Disabling log monitoring for function '{function_name}'."
                 if self.timeout_flag:
-                    tl.log_(msg_disabling)
+                    tl.log(msg_disabling)
                     return
                 if self.timeout_flag or self.__parse_log(log_raw, self.test_name, expected):
                     tl.log(msg_disabling)
@@ -196,6 +198,7 @@ class TestProcedure:
         # Declare error if execution confirmation is not found
         if execution_confirmation not in log_str:
             self.test_results[test_name][function_name] = log_diagnose
+            return True
         else:
             log_diagnose['execution_confirmation'] = True
 
