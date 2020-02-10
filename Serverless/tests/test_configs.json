@@ -18,7 +18,7 @@
         "function_name": "celeb-recognition",
         "execution_confirmation": "Function execution completed",
         "pick_by": "test_id_1",
-        "assert": ["Function execution completed", "Kate Moss"]
+        "assert": ["Function execution completed", "Kate Moss---=-=-"]
       }
     ]
   }
