@@ -2,7 +2,6 @@ import os, subprocess, time
 from datetime import datetime
 
 from tests.test_procedure import TestProcedure
-from tests.tests import Tests
 from tests.test_logger import TestLogger as tl
 
 DEPLOY = True
@@ -15,10 +14,6 @@ GIT_COMMIT_MESSAGE = 'Solving multiple SQS trigger executions.'
 
 TEST_FUNCTIONS = True
 PRINT_LOGS_ON_SCREEN = False
-# FUNCTIONS_TO_TEST = [
-#     ('add-picture', 'tests/mock_add_picture_a.json', 200, ['celeb-recognition']),
-#     # ('add-picture', 'tests/mock_add_picture_b.json', 200)
-# ]
 TESTS_TO_PERFORM = [
     'add-picture-integration'
 ]
@@ -89,24 +84,6 @@ class DeployAndTest:
         tl.print_header('TESTING PROCEDURES')
         TestProcedure(TESTS_TO_PERFORM)
         tl.log_alert(f'Elapsed (all tests): {self.get_duration(total_duration)}')
-
-    # def test_functions(self):
-    #     if not TEST_FUNCTIONS: return
-    #     total_duration = time.time()
-    #     tl.print_header('TESTING PROCEDURES')
-    #     for test in FUNCTIONS_TO_TEST:
-    #         duration = time.time()
-    #         name = test[0]
-    #         params = test[1]
-    #         expected = test[2]
-    #         command = f'sls invoke -f {name} -l'
-    #         if params.strip(): command += f' --path {params.strip()}'
-    #         logs = self.execute_and_log(command, f'Testing "{name}" @ params "{params}". '
-    #                                              f'Expect: "{expected}"...', PRINT_LOGS_ON_SCREEN)
-    #         status, logs = Tests.test(name, logs, expected)
-    #         for log in logs: tl.log(log)
-    #         tl.log_alert(f"Elapsed ('{name}'): {self.get_duration(duration)}")
-    #     tl.log_alert(f'Elapsed (all tests): {self.get_duration(total_duration)}')
 
     def execute_and_log(self, execute, log, log_details = True):
         tl.log_alert(f"{log} ({execute})")
