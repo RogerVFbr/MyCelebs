@@ -130,14 +130,25 @@ class TestProcedure:
             else:
                 tl.log(f"{log_indent_test}No log captured.", print_on_screen=print_on_screen)
 
-            pick_by = self.expected.get('pick_by')
+            pick_by = results.get('pick_by')
             if pick_by:
                 tl.log(f"Picked by '{pick_by}'.")
 
-            tl.log(f"{log_indent_test}Execution confirmation. {self.__get_status_string(execution_confirmation)}")
+            assertion_success = 0
 
-            for assertion, status in list(results.items())[2:]:
+            tl.log(f"{log_indent_test}Execution confirmation. {self.__get_status_string(execution_confirmation)}")
+            if execution_confirmation: assertion_success += 1
+
+            assertion_list = list(results.items())[3:]
+            for assertion, status in assertion_list:
                 tl.log(f"{log_indent_test}{assertion} {self.__get_status_string(status)}")
+                if status: assertion_success += 1
+
+            assertion_no = len(assertion_list)
+            if assertion_no+1 == assertion_success:
+                tl.log(tl.paint_green(f"'{function_name}' assertion PASSED ({assertion_success}/{assertion_no+1})."))
+            else:
+                tl.log(tl.paint_red(f"'{function_name}' assertion FAILED ({assertion_success}/{assertion_no+1})."))
 
             tl.log('.')
 
@@ -191,6 +202,7 @@ class TestProcedure:
         log_dicts = self.__parse_dicts_from_strings(log_str)
         log_diagnose = OrderedDict({
             'execution_confirmation': False,
+            'pick_by': pick_by,
             'log_raw': log_raw
         })
 
@@ -222,7 +234,7 @@ class TestProcedure:
             elif isinstance(assertion, dict):
                 props = assertion.keys()
                 msg = "'{}': {} => {}."
-                msg_not_found = "Property '{}' should be {} but was not found."
+                msg_not_found = "'{}' : {} => Property not found."
                 for prop in props:
                     prop_found = False
                     for log_dict in log_dicts:
