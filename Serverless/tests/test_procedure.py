@@ -114,8 +114,6 @@ class TestProcedure:
     def __present_test_results(self):
         tl.log_alert(f"Test '{self.test_name}' completed. Results:")
         test_result = self.test_results.get(self.test_name)
-        # log_indent_title = "    "
-        # log_indent_test = "       "
         log_indent_title = ""
         log_indent_test = ""
         for function_name, results in test_result.items():
@@ -132,16 +130,16 @@ class TestProcedure:
             else:
                 tl.log(f"{log_indent_test}No log captured.", print_on_screen=print_on_screen)
 
+            pick_by = self.expected.get('pick_by')
+            if pick_by:
+                tl.log(f"Picked by '{pick_by}'.")
+
             tl.log(f"{log_indent_test}Execution confirmation. {self.__get_status_string(execution_confirmation)}")
 
             for assertion, status in list(results.items())[2:]:
                 tl.log(f"{log_indent_test}{assertion} {self.__get_status_string(status)}")
 
             tl.log('.')
-
-
-
-
 
     def __get_status_string(self, status):
         if status:
