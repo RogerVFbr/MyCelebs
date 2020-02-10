@@ -5,7 +5,7 @@ from tests.test_procedure import TestProcedure
 from tests.tests import Tests
 from tests.test_logger import TestLogger as tl
 
-DEPLOY = False
+DEPLOY = True
 FULL = False
 FUNCTIONS_TO_DEPLOY = ['add-picture', 'celeb-recognition']
 
