@@ -9,7 +9,7 @@ class TestProcedure:
     TEST_CONFIG_PATH = 'tests/test_configs.json'
     REQUIRED_TEST_PROPERTIES = {'log_name', 'function_name', 'params', 'expected'}
     REQUIRED_EXPECTED_RESPONSE_PROPERTIES = {'function_name', 'execution_confirmation', 'pick_by', 'assert'}
-    PRINT_FUNCTION_LOGS_ON_SCREEN = True
+    PRINT_FUNCTION_LOGS_ON_SCREEN = False
     LOG_MONITORING_TIMEOUT = 30
     LOG_START_IDENTIFIER = 'START RequestId:'
     LOG_END_IDENTIFIER = 'XRAY TraceId:'
