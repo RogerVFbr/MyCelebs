@@ -4,12 +4,12 @@ from datetime import datetime
 from tests.test_procedure import TestProcedure
 from tests.test_logger import TestLogger as tl
 
-DEPLOY = False
+DEPLOY = True
 FULL = False
 FUNCTIONS_TO_DEPLOY = ['add-picture', 'celeb-recognition']
 
 UPDATE_REPOSITORY = True
-MAIN_BRANCH = True
+MAIN_BRANCH = False
 GIT_COMMIT_MESSAGE = 'Test suite v1 complete.'
 
 TEST_FUNCTIONS = True

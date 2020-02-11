@@ -14,13 +14,19 @@ class TestLogger:
         'yellow': '\u001b[33m',
         'red': '\u001b[31m',
         'green': '\u001b[32m',
+        'bg_green': '\u001b[42m',
+        'bg_red': '\u001b[41m',
+        'bold': '\u001b[1m',
+        'underline': '\u001b[4m',
+        'reversed': '\u001b[7m',
         'default': '\u001b[0m'
     }
 
     @classmethod
     def log_alert(cls, msg, print_on_screen=True):
-        msg = f"{cls.ANSI_COLORS.get('yellow')}{datetime.utcnow().strftime('%H:%M:%S')}:UTC - " \
-              f"{msg}{cls.ANSI_COLORS.get('default')}"
+        yellow, reversed, default = cls.ANSI_COLORS.get('yellow'), cls.ANSI_COLORS.get('reversed'), \
+                                  cls.ANSI_COLORS.get('default')
+        msg = f"{yellow}{reversed}{datetime.utcnow().strftime('%H:%M:%S')}:UTC{default}{yellow} {msg}{default}"
         cls.log(msg, print_on_screen)
 
     @classmethod
@@ -30,12 +36,16 @@ class TestLogger:
         cls.log(msg, print_on_screen)
 
     @classmethod
-    def paint_red(cls, msg):
-        return f"{cls.ANSI_COLORS.get('red')}{msg}{cls.ANSI_COLORS.get('default')}"
+    def underline(cls, msg):
+        return f"{cls.ANSI_COLORS.get('underline')}{msg}{cls.ANSI_COLORS.get('default')}"
 
     @classmethod
-    def paint_green(cls, msg):
-        return f"{cls.ANSI_COLORS.get('green')}{msg}{cls.ANSI_COLORS.get('default')}"
+    def bold(cls, msg):
+        return f"{cls.ANSI_COLORS.get('bold')}{msg}{cls.ANSI_COLORS.get('default')}"
+
+    @classmethod
+    def invert(cls, msg):
+        return f"{cls.ANSI_COLORS.get('invert')}{msg}{cls.ANSI_COLORS.get('default')}"
 
     @classmethod
     def paint_status(cls, msg, success):
@@ -43,6 +53,15 @@ class TestLogger:
             return f"{cls.ANSI_COLORS.get('green')}{msg}{cls.ANSI_COLORS.get('default')}"
         else:
             return f"{cls.ANSI_COLORS.get('red')}{msg}{cls.ANSI_COLORS.get('default')}"
+
+    @classmethod
+    def paint_status_bg(cls, msg, success):
+        if success:
+            return f"{cls.ANSI_COLORS.get('green')}{cls.ANSI_COLORS.get('reversed')}" \
+                f"{msg}{cls.ANSI_COLORS.get('default')}"
+        else:
+            return f"{cls.ANSI_COLORS.get('red')}{cls.ANSI_COLORS.get('reversed')}" \
+                f"{msg}{cls.ANSI_COLORS.get('default')}"
 
     @classmethod
     def log(cls, msg, print_on_screen=True, ignore_wrap=False):
@@ -80,5 +99,5 @@ class TestLogger:
         main += "".join([' ' for x in range(size-len(main))]) + '}'
         upper_line = ' /' + "".join(['=' for x in range(len(main)-4)]) + '\\'
         lower_line = ' \\' + "".join(['=' for x in range(len(main)-4)]) + '/'
-        cls.log(f'{color}{upper_line}\n{main}\n{lower_line}{default}', ignore_wrap=True)
+        cls.log(f'{cls.ANSI_COLORS.get("bold")}{color}{upper_line}\n{main}\n{lower_line}{default}', ignore_wrap=True)
         cls.log('', ignore_wrap=True)

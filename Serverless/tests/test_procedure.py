@@ -113,11 +113,12 @@ class TestProcedure:
 
     def __present_test_results(self):
         tl.log_alert(f"Test '{self.test_name}' completed. Results:")
+        tl.log('.')
         test_result = self.test_results.get(self.test_name)
         log_indent_title = ""
         log_indent_test = ""
         for function_name, results in test_result.items():
-            tl.log(f"{log_indent_title}-> Function '{function_name}'")
+            tl.log(tl.underline(f"{log_indent_title}-> Function '{function_name}'"))
             log_raw = results.get('log_raw')
 
             execution_confirmation = results.get('execution_confirmation')
@@ -146,11 +147,11 @@ class TestProcedure:
 
             assertion_no = len(assertion_list)
             if assertion_no+1 == assertion_success:
-                tl.log(tl.paint_green(f"'{function_name}' assertion PASSED ({assertion_success}/{assertion_no+1} "
-                                      f"checks)."))
+                tl.log(tl.paint_status_bg(f"'{function_name}' assertion PASSED ({assertion_success}/{assertion_no + 1} "
+                                      f"checks).", True))
             else:
-                tl.log(tl.paint_red(f"'{function_name}' assertion FAILED ({assertion_success}/{assertion_no+1} "
-                                    f"checks)."))
+                tl.log(tl.paint_status_bg(f"'{function_name}' assertion FAILED ({assertion_success}/{assertion_no + 1} "
+                                    f"checks).", False))
 
             tl.log('.')
 
@@ -163,7 +164,6 @@ class TestProcedure:
     def __monitor_function_log(self, expected):
         function_name = expected.get('function_name')
         command = f"sls logs -f {function_name} -t"
-        tl.log(f"Enabling log monitoring for function '{function_name}'...")
         log_open = False
         log_raw = []
         p = subprocess.Popen(command, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
@@ -176,13 +176,8 @@ class TestProcedure:
             elif self.LOG_END_IDENTIFIER in line and log_open:
                 log_raw.append(line)
                 log_open = False
-                msg_disabling = f"Disabling log monitoring for function '{function_name}'."
-                if self.timeout_flag:
-                    tl.log(msg_disabling)
-                    return
-                if self.__parse_log(log_raw, self.test_name, expected):
-                    tl.log(msg_disabling)
-                    return
+                if self.timeout_flag: return
+                if self.__parse_log(log_raw, self.test_name, expected): return
                 else:
                     log_raw = []
                     continue
@@ -297,14 +292,13 @@ class TestProcedure:
             if prop in data:
                 return data[prop]
             else:
-                print('imin')
                 for k, v in data.items():
-                    value = cls.get_prop_value(v, prop)
+                    value = cls.__get_prop_value(v, prop)
                     if value: return value
 
         elif isinstance(data, (list, tuple)):
             for v in data:
-                value = cls.get_prop_value(v, prop)
+                value = cls.__get_prop_value(v, prop)
                 if value: return value
 
         else:

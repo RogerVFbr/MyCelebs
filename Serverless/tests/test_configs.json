@@ -9,9 +9,7 @@
         "execution_confirmation": "RETURN - ",
         "pick_by": "test_id_1",
         "assert": [
-          {
-            "statusCode": 200
-          }
+          { "statusCode": 200 }
         ]
       },
       {
@@ -20,7 +18,7 @@
         "pick_by": "test_id_1",
         "assert": [
           "Function execution completed",
-          {"name": "Kate Moss"}
+          { "name": "Kate Moss" }
         ]
       }
     ]
