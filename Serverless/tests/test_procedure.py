@@ -146,9 +146,11 @@ class TestProcedure:
 
             assertion_no = len(assertion_list)
             if assertion_no+1 == assertion_success:
-                tl.log(tl.paint_green(f"'{function_name}' assertion PASSED ({assertion_success}/{assertion_no+1})."))
+                tl.log(tl.paint_green(f"'{function_name}' assertion PASSED ({assertion_success}/{assertion_no+1} "
+                                      f"checks)."))
             else:
-                tl.log(tl.paint_red(f"'{function_name}' assertion FAILED ({assertion_success}/{assertion_no+1})."))
+                tl.log(tl.paint_red(f"'{function_name}' assertion FAILED ({assertion_success}/{assertion_no+1} "
+                                    f"checks)."))
 
             tl.log('.')
 
@@ -236,17 +238,27 @@ class TestProcedure:
                 msg = "'{}': {} => {}."
                 msg_not_found = "'{}' : {} => Property not found."
                 for prop in props:
-                    prop_found = False
-                    for log_dict in log_dicts:
-                        if prop in log_dict:
-                            if log_dict[prop] == assertion[prop]:
-                                log_diagnose[msg.format(prop, assertion[prop], log_dict[prop])] = True
-                            else:
-                                log_diagnose[msg.format(prop, assertion[prop], log_dict[prop])] = False
-                            prop_found = True
-                            break
-                    if not prop_found:
+                    prop_value = self.__get_prop_value(log_dicts, prop)
+                    if prop_value and prop_value == assertion[prop]:
+                        log_diagnose[msg.format(prop, assertion[prop], prop_value)] = True
+                    elif prop_value and prop_value != assertion[prop]:
+                        log_diagnose[msg.format(prop, assertion[prop], prop_value)] = False
+                    elif not prop_value:
                         log_diagnose[msg_not_found.format(prop, assertion[prop])] = False
+
+
+
+                    # prop_found = False
+                    # for log_dict in log_dicts:
+                    #     if prop in log_dict:
+                    #         if log_dict[prop] == assertion[prop]:
+                    #             log_diagnose[msg.format(prop, assertion[prop], log_dict[prop])] = True
+                    #         else:
+                    #             log_diagnose[msg.format(prop, assertion[prop], log_dict[prop])] = False
+                    #         prop_found = True
+                    #         break
+                    # if not prop_found:
+                    #     log_diagnose[msg_not_found.format(prop, assertion[prop])] = False
 
         self.test_results[test_name][function_name] = log_diagnose
         return True
@@ -258,7 +270,6 @@ class TestProcedure:
         tl.log(f"Invoking '{self.function_name}' @ params '{self.params}'...")
         p = subprocess.Popen(command, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
-
 
     @staticmethod
     def __parse_dicts_from_strings(value):
@@ -278,6 +289,26 @@ class TestProcedure:
             if open_bracers > 0:
                 current_check += x
         return dicts
+
+    @classmethod
+    def __get_prop_value(cls, data, prop):
+
+        if isinstance(data, dict):
+            if prop in data:
+                return data[prop]
+            else:
+                print('imin')
+                for k, v in data.items():
+                    value = cls.get_prop_value(v, prop)
+                    if value: return value
+
+        elif isinstance(data, (list, tuple)):
+            for v in data:
+                value = cls.get_prop_value(v, prop)
+                if value: return value
+
+        else:
+            return None
 
 
 
