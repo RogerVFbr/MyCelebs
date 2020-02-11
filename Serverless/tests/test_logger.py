@@ -26,14 +26,14 @@ class TestLogger:
     def log_alert(cls, msg, print_on_screen=True):
         yellow, reversed, default = cls.ANSI_COLORS.get('yellow'), cls.ANSI_COLORS.get('reversed'), \
                                   cls.ANSI_COLORS.get('default')
-        msg = f"{yellow}{reversed}{datetime.utcnow().strftime('%H:%M:%S')}:UTC{default}{yellow} {msg}{default}"
+        msg = f"{yellow}{reversed}{datetime.utcnow().strftime('%H:%M:%S')}:UTC:{default}{yellow} {msg}{default}"
         cls.log(msg, print_on_screen)
 
     @classmethod
     def log_error(cls, msg, print_on_screen=True):
         red, reversed, default = cls.ANSI_COLORS.get('red'), cls.ANSI_COLORS.get('reversed'), \
                                   cls.ANSI_COLORS.get('default')
-        msg = f"{red}{reversed}{datetime.utcnow().strftime('%H:%M:%S')}:UTC{default}{red} {msg}{default}"
+        msg = f"{red}{reversed}{datetime.utcnow().strftime('%H:%M:%S')}:UTC:{default}{red} {msg}{default}"
         cls.log(msg, print_on_screen)
 
     @classmethod
