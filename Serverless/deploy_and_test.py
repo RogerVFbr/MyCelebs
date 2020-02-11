@@ -5,12 +5,12 @@ from tests.test_procedure import TestProcedure
 from tests.test_logger import TestLogger as tl
 
 DEPLOY = True
-FULL = False
+FULL = True
 FUNCTIONS_TO_DEPLOY = ['add-picture', 'celeb-recognition']
 
 UPDATE_REPOSITORY = True
-MAIN_BRANCH = False
-GIT_COMMIT_MESSAGE = 'Test suite v1 complete.'
+MAIN_BRANCH = True
+GIT_COMMIT_MESSAGE = 'Written test comments.'
 
 TEST_FUNCTIONS = True
 PRINT_LOGS_ON_SCREEN = False

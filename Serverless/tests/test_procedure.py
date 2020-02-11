@@ -5,34 +5,66 @@ from tests.test_logger import TestLogger as tl
 
 
 class TestProcedure:
+    """
+    Testing procedure object class. Wraps logic around Serverless Framework commands to run service integration tests
+    according to configuration contained in test_configs.json file. Requested tests are sent by parameter via
+    constructor.
+    """
 
-    TEST_CONFIG_PATH = 'tests/test_configs.json'
-    REQUIRED_TEST_PROPERTIES = {'log_name', 'function_name', 'params', 'expected'}
-    REQUIRED_EXPECTED_RESPONSE_PROPERTIES = {'function_name', 'execution_confirmation', 'pick_by', 'assert'}
-    LOG_MONITORING_TIMEOUT = 30
-    LOG_START_IDENTIFIER = 'START RequestId:'
-    LOG_END_IDENTIFIER = 'XRAY TraceId:'
-    TEST_PASSED_STR = 'PASSED'
-    TEST_FAILED_STR = 'FAILED'
+    TEST_CONFIG_PATH = 'tests/test_configs.json'    # :str: Test configurations file location.
+    REQUIRED_TEST_PROPERTIES = {                    # :set: Properties each test configuration must contain.
+        'log_name',                                 # :str: Descriptive test name.
+        'function_name',                            # :str: Main function name, trigger of the event chain.
+        'params',                                   # :str: Path of the JSON file containing execution parameters.
+        'expected'                                  # :str: Expected response objects.
+    }
+    REQUIRED_EXPECTED_RESPONSE_PROPERTIES = {       # :set: Expected response required properties.
+        'function_name',                            # :str: Name of function that will generate this response via log.
+        'execution_confirmation',                   # :str: Log must contain this string for execution to be confirmed.
+        'pick_by',                                  # :str: Log must contain this string to be selected for analysis.
+        'assert'                                    # :str: Additional assertions to be performed on log.
+    }
+    LOG_MONITORING_TIMEOUT = 30                     # :int: Maximum log monitoring time.
+    LOG_START_IDENTIFIER = 'START RequestId:'       # :str: Denotes start of a new function log.
+    LOG_END_IDENTIFIER = 'XRAY TraceId:'            # :str: Denotes end of a new function log.
+    REPORT_IDENTIFIER = 'REPORT '                   # :str: Denotes line contains report information.
 
-    def __init__(self, required_tests, print_on_screen):
-        self.required_tests = required_tests
-        self.test_configs = None
-        self.test_name = None
-        self.log_name = None
-        self.function_name = None
-        self.params = None
-        self.expected = []
-        self.threads = []
-        self.timeout_flag = False
-        self.test_results = OrderedDict()
+    def __init__(self, required_tests: list, print_on_screen: bool):
+        """
+        Constructor of the Test Procedure object. Stores provided data, triggers configuration parsing, validation and
+        test procedures.
+        :param required_tests: List containing strings denoting which tests are to be executed.
+        :param print_on_screen: Toggles function on screen log printing on or off.
+        """
 
+        self.required_tests = required_tests        # :list: Contains names of the tests requested to be executed.
+        self.test_configs = None                    # :dict: Parsed full test configurations JSON file.
+        self.test_name = None                       # :str: Name of currently executed test.
+        self.log_name = None                        # :str: Descriptive name of currently executed test.
+        self.function_name = None                   # :str: Name of main trigger function currently being tested.
+        self.params = None                          # :str: Path of JSON parameters file currently being used.
+        self.expected = []                          # :list: Current expected response objects.
+        self.threads = []                           # :list: Current log monitoring threads.
+        self.timeout_flag = False                   # :bool: Timeout flag, is True when exeution time expired/
+        self.test_results = OrderedDict()           # :OrderedDict: Stores test results (log diagnoses.)
+
+        # Updates on screen log printing flag as per parameter sent.
         self.PRINT_FUNCTION_LOGS_ON_SCREEN = print_on_screen
 
+        # Performs configuration parsing and validation, abort if impossible.
         if not self.__parse_test_configs(): return
+
+        # Runs tests.
         self.__run_tests()
 
-    def __parse_test_configs(self):
+    def __parse_test_configs(self) -> bool:
+        """
+        Parses and validates test configurations JSON file located on path discribed at class property
+        TEST_CONFIG_PATH.
+        :return: boolean. Value expresses whether procedure has executed successfully or not.
+        """
+
+        # Attempts to locate and read test_configs.json file.
         try:
             with open(self.TEST_CONFIG_PATH, 'r') as f:
                 self.test_configs = json.load(f)
@@ -41,26 +73,29 @@ class TestProcedure:
                          f"'{self.TEST_CONFIG_PATH}'")
             return False
 
+        # Checks each test configuration contained in test configs dictionary.
         available_tests = self.test_configs.keys()
-
         for test in self.required_tests:
 
+            # If requested test configuration doesn't exist on test_configs file, alert and abort.
             if test not in available_tests:
                 tl.log_error(f"Unable to find required test '{test}' specifications in configuration file.")
                 return False
 
+            # If requested test configuration doesn't contain required properties, alert and abort.
             test_keys = set(self.test_configs.get(test).keys())
             if self.REQUIRED_TEST_PROPERTIES != test_keys:
                 tl.log_error(f"Missing or mistyped test property in test '{test}' - {test_keys}.")
                 return False
 
+            # If requested test configuration doesn't contain at least one response specification, alert and abort.
             test_config = self.test_configs.get(test)
             expected_responses = test_config.get('expected')
-
             if len(expected_responses) == 0:
                 tl.log_error(f"At least one expected response must be specified on test '{test}'")
                 return False
 
+            # If requested test responses don't contain required properties, alert and abort.
             for i, expected_response in enumerate(expected_responses):
                 expected_response_keys = set(expected_response.keys())
                 if self.REQUIRED_EXPECTED_RESPONSE_PROPERTIES != expected_response_keys:
@@ -68,13 +103,14 @@ class TestProcedure:
                                  f"{i}: {expected_response_keys}")
                     return False
 
-            tl.log_alert(f"Successfully parsed test configurations for: {self.required_tests}")
+            # Parsing and validation occurred successfully, return True.
             return True
 
-    def __validate_configs(self):
-        pass
-
     def __run_tests(self):
+        """
+        Executes required tests on standard test procedure, triggering results presentation after each iteration.
+        :return: void.
+        """
 
         # Apply procedure sequentially for every requested test.
         for test in self.required_tests:
@@ -116,9 +152,14 @@ class TestProcedure:
                                  f"({self.LOG_MONITORING_TIMEOUT}s)")
                     self.timeout_flag = True
 
+            # Test concluded, log results.
             self.__present_test_results()
 
     def __present_test_results(self):
+        """
+        Formats and logs acquired test results.
+        :return: void
+        """
 
         # Prepares data
         test_result = self.test_results.get(self.test_name)
@@ -146,6 +187,12 @@ class TestProcedure:
             else:
                 tl.log(f"{log_indent_test}No log captured.", print_on_screen=print_on_screen)
 
+            log_report = results.get('log_report')
+            if log_report:
+                report_str = f"Billed: {log_report.get('billed_duration')} | Memory: " \
+                    f"{log_report.get('max_memory_used')} / {log_report.get('memory_size')}."
+                tl.log(report_str)
+
             # Exposes criteria by which the log has been selected.
             pick_by = results.get('pick_by')
             if pick_by:
@@ -155,13 +202,13 @@ class TestProcedure:
             assertion_success = 0
 
             # Shows execution confirmation status
-            tl.log(f"{log_indent_test}Execution confirmation. {self.__get_status_string(execution_confirmation)}")
+            tl.log(f"{log_indent_test}{tl.get_status_string(execution_confirmation)} Execution confirmation.")
             if execution_confirmation: assertion_success += 1
 
             # Shows individual function assertions statuses.
-            assertion_list = list(results.items())[3:]
+            assertion_list = list(results.items())[4:]
             for assertion, status in assertion_list:
-                tl.log(f"{log_indent_test}{assertion} {self.__get_status_string(status)}")
+                tl.log(f"{log_indent_test}{tl.get_status_string(status)} {assertion}")
                 if status: assertion_success += 1
 
             # Shows final function assertion status.
@@ -174,17 +221,12 @@ class TestProcedure:
                                     f"checks).", False))
             tl.log('.')
 
-    def __get_status_string(self, status):
-
-        # If status is positive (true), returns standard stylized 'test passed' string.
-        if status:
-            return tl.paint_status(self.TEST_PASSED_STR, True)
-
-        # If status is negative (false), returns standard stylized 'test failed' string.
-        else:
-            return tl.paint_status(self.TEST_FAILED_STR, False)
-
-    def __monitor_function_log(self, expected):
+    def __monitor_function_log(self, expected: dict):
+        """
+        Monitors function logs in real-time, extracts individual acquired logs and passes to log parser method.
+        :param expected: Dictionary containing expected response properties.
+        :return: void.
+        """
 
         # Prepares data
         function_name = expected.get('function_name')
@@ -198,6 +240,7 @@ class TestProcedure:
 
         # Iterates on subprocess stdout to capture logs.
         for line in iter(p.stdout.readline, b''):
+            if self.timeout_flag: return
             line = line.decode("utf-8").replace('\n', '')
 
             # Initiates a log capture if a 'log start identifier' has been detected.
@@ -221,17 +264,26 @@ class TestProcedure:
         p.stdout.close()
         p.wait()
 
-    def __parse_log(self, log_raw, expected) -> bool:
+    def __parse_log(self, log_raw: list, expected: dict) -> bool:
+        """
+        Parses and evaluates log data according to provided expectations, arranging extracted data into log diagnose
+        dictionary.
+        :param log_raw: List of string containing function execution log lines.
+        :param expected: Dictionary containing expected function output characteristics.
+        :return:
+        """
 
         # Prepares data
         function_name = expected.get('function_name')
         pick_by = expected.get('pick_by')
         log_str = ''.join(log_raw)
         log_dicts = self.__parse_dicts_from_strings(log_str)
+        log_report = self.__parse_report_from_raw_logs(log_raw)
         log_diagnose = OrderedDict({
             'execution_confirmation': False,
             'pick_by': pick_by,
-            'log_raw': log_raw
+            'log_raw': log_raw,
+            'log_report': log_report
         })
 
         # Informs developer a log has been captured.
@@ -279,34 +331,100 @@ class TestProcedure:
         return True
 
     def __invoke_main_function(self):
+        """
+        Invokes main trigger function.
+        :return: void.
+        """
+
+        # Await 100ms before invocation.
         time.sleep(0.1)
+
+        # Build execution command with path if available.
         command = f'sls invoke -f {self.function_name} -l'
         if self.params.strip(): command += f' --path {self.params.strip()}'
+
+        # Inform developer of invocation.
         tl.log(f"Invoking '{self.function_name}' @ params '{self.params}'...")
+
+        # Run command using subprocess.Popen
         p = subprocess.Popen(command, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
 
     @staticmethod
-    def __parse_dicts_from_strings(value):
-        dicts = []
-        current_check = ''
-        open_bracers = 0
-        for x in value:
-            if x == '{':
-                open_bracers += 1
-            elif x == '}' and open_bracers > 0:
-                open_bracers -= 1
-                if open_bracers == 0:
-                    current_check += x
+    def __parse_dicts_from_strings(data: str) -> list:
+        """
+        Parses dictionaries of any form contained on provided string.
+        :param data: String to be analyzed.
+        :return: List of dictionaries parsed from provided string.
+        """
+
+        # Initialize memory
+        dicts, current_check, open_braces = [], '', 0
+
+        # Iterate on every character of provided string.
+        for c in data:
+
+            # If an opening curly brace has been found, increase it's count.
+            if c == '{':
+                open_braces += 1
+
+            # If a closing curly brace has been found, decrease it's count.
+            elif c == '}' and open_braces > 0:
+                open_braces -= 1
+
+                # If open braces count has zeroed out, a dictionary has been formed. Convert and save.
+                if open_braces == 0:
+                    current_check += c
                     dicts.append(eval(current_check))
                     current_check = ''
                     continue
-            if open_bracers > 0:
-                current_check += x
+
+            # If there are open braces, a dictionary is being formed, save character.
+            if open_braces > 0:
+                current_check += c
+
+        # Procedure completed, return extracted dictionaries.
         return dicts
 
     @classmethod
+    def __parse_report_from_raw_logs(cls, log_raw: list) -> dict:
+        """
+        Parses metric reports from provided raw log lines.
+        :param log_raw:
+        :return:
+        """
+
+        # Attempts to locate line containing report identifier.
+        report_raw = ''
+        for line in log_raw:
+            if cls.REPORT_IDENTIFIER in line:
+                report_raw = line.replace(cls.REPORT_IDENTIFIER, '').strip()
+                break
+
+        # If report was not found, return empty dictionary.
+        if not report_raw: return {}
+
+        # Parse report line data into usable dictionary if possible.
+        fragments, report_dict = report_raw.split('\t'), {}
+        for x in fragments:
+            try:
+                key, value = tuple(x.split(': '))
+                report_dict[key.lower().replace(' ', '_')] = value
+            except Exception:
+                pass
+
+        # Return built report dictionary.
+        return report_dict
+
+    @classmethod
     def __get_prop_value(cls, data, prop):
+        """
+        Recursive method for extracting the value of the first property that matches a given name on an unknown data
+        structure.
+        :param data: Data structure to be traversed.
+        :param prop: Property name to be located.
+        :return:
+        """
 
         if isinstance(data, dict):
             if prop in data:
