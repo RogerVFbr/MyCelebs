@@ -31,8 +31,9 @@ class TestLogger:
 
     @classmethod
     def log_error(cls, msg, print_on_screen=True):
-        msg = f"{cls.ANSI_COLORS.get('red')}{datetime.utcnow().strftime('%H:%M:%S')}:UTC - " \
-              f"{msg}{cls.ANSI_COLORS.get('default')}"
+        red, reversed, default = cls.ANSI_COLORS.get('red'), cls.ANSI_COLORS.get('reversed'), \
+                                  cls.ANSI_COLORS.get('default')
+        msg = f"{red}{reversed}{datetime.utcnow().strftime('%H:%M:%S')}:UTC{default}{red} {msg}{default}"
         cls.log(msg, print_on_screen)
 
     @classmethod
