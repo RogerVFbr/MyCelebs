@@ -1,15 +1,17 @@
 import os, subprocess, time
 from datetime import datetime
-
 from tests.test_procedure import TestProcedure
 from tests.test_logger import TestLogger as tl
 
 DEPLOY = True
 FULL = True
-FUNCTIONS_TO_DEPLOY = ['add-picture', 'celeb-recognition']
+FUNCTIONS_TO_DEPLOY = [
+    'add-picture',
+    'celeb-recognition'
+]
 
 UPDATE_REPOSITORY = True
-MAIN_BRANCH = True
+MAIN_BRANCH = False
 GIT_COMMIT_MESSAGE = 'Written test comments.'
 
 TEST_FUNCTIONS = True
@@ -87,18 +89,15 @@ class DeployAndTest:
 
     def execute_and_log(self, execute, log, log_details = True):
         tl.log_alert(f"{log} ({execute})")
-        logs = []
         p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         for i, std in enumerate([p.stdout, p.stderr]):
             for line in iter(std.readline, b''):
                 log = line.decode("utf-8").replace('\n', '')
-                logs.append(log)
                 if i == 0: tl.log(log, log_details)
                 else: tl.log_error(log, log_details)
         p.stdout.close()
         p.wait()
-        return logs
 
     @staticmethod
     def get_duration(start):
