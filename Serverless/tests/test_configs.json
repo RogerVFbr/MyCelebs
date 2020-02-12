@@ -17,6 +17,12 @@
         "execution_confirmation": "Function execution completed",
         "pick_by": "test_id_1",
         "assert": []
+      },
+      {
+        "function_name": "generate-thumbnail",
+        "execution_confirmation": "Function execution completed",
+        "pick_by": "",
+        "assert": []
       }
     ]
   }

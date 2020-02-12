@@ -103,6 +103,14 @@ class TestProcedure:
                                  f"{i}: {expected_response_keys}")
                     return False
 
+            # If no response is defined for main test function, alert and abort.
+            expected_func_names = [x.get('function_name') for x in expected_responses]
+            main_function_name = test_config.get('function_name')
+            if main_function_name not in expected_func_names:
+                tl.log_error(f"No expected response is defined for main function '{main_function_name}' on test "
+                             f"'{test}'.")
+                return False
+
             # Parsing and validation occurred successfully, return True.
             return True
 
@@ -129,7 +137,7 @@ class TestProcedure:
 
             # Launches log monitoring threads, one for each of the observed functions.
             for expected in self.expected:
-                self.test_results[self.test_name][expected.get('function_name')] = OrderedDict()
+                if expected.get('function_name') == self.function_name: continue
                 t = threading.Thread(target=self.__monitor_function_log, args=(expected,))
                 t.daemon = True
                 t.start()
@@ -139,7 +147,13 @@ class TestProcedure:
                 })
 
             # Triggers main function invocation.
-            self.__invoke_main_function()
+            t = threading.Thread(target=self.__invoke_main_function)
+            t.daemon = True
+            t.start()
+            self.threads.append({
+                'function_name': self.function_name,
+                'thread': t
+            })
 
             # Main thread now awaits log extraction, up to a maximum amount of time.
             for thread_entry in self.threads:
@@ -350,6 +364,16 @@ class TestProcedure:
         p = subprocess.Popen(command, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
 
+        # Iterates on subprocess stdout to capture logs.
+        log_raw = []
+        for line in iter(p.stdout.readline, b''):
+            line = line.decode("utf-8").replace('\n', '')
+            log_raw.append(line)
+        p.stdout.close()
+        p.wait()
+
+        self.__parse_log(log_raw, next(x for x in self.expected if x['function_name'] == self.function_name))
+
     @staticmethod
     def __parse_dicts_from_strings(data: str) -> list:
         """
@@ -375,7 +399,7 @@ class TestProcedure:
                 # If open braces count has zeroed out, a dictionary has been formed. Convert and save.
                 if open_braces == 0:
                     current_check += c
-                    dicts.append(eval(current_check))
+                    dicts.append(eval(current_check.replace('true', 'True').replace('false', 'False')))
                     current_check = ''
                     continue
 

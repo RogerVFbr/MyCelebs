@@ -22,13 +22,13 @@ celeb-recognition:
             - Arn
         batchSize: 1
 
-#generate-thumbnail:
-#  handler: s3_generate_thumbnail/handler.generate_thumbnail
-#  events:
-#    - s3:
-#        bucket: ${self:provider.environment.BUCKET_NAME}
-#        event: s3:ObjectCreated:*
-#        existing: true
+generate-thumbnail:
+  handler: s3_generate_thumbnail/handler.generate_thumbnail
+  events:
+    - s3:
+        bucket: ${self:provider.environment.BUCKET_NAME}
+        event: s3:ObjectCreated:*
+        existing: true
 
 
 
