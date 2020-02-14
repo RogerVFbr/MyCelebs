@@ -53,7 +53,7 @@ def add_picture(event, context):
     if not sl.status:
         return sl.failed_return_object
 
-    print(ap.rsc.SUCCESSFUL_CLOUD_FUNCTION_EXECUTION.format(sl.invocation_id))
+    ap.log_successful_execution_msg(sl.invocation_id)
 
     # Return success object
     return ap.get_return_object(

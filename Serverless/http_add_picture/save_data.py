@@ -9,6 +9,7 @@ class SaveData(APIPhase):
     def __init__(self, repository, data: dict, invocation_id: str):
         """
         Constructor of the log saving object, stores provided data and instantiates log repository.
+        :param repository: selected repository to work upon.
         :param data: dictionary containing the data to be stored.
         :param invocation_id: string containing id of current cloud function invocation to be to be used by API metrics.
         """

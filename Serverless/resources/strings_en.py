@@ -21,6 +21,7 @@ class Strings:
     RECOGNITION_ACQUIRED_META_DATA = 'Final image meta data: {}'
 
     IMAGE_SAVE_API_CONTACTED = 'Saved image to "S3" blob storage API ({}). Response: {}'
+    IMAGE_LOAD_API_CONTACTED = 'Loaded image from "S3" blob storage API. Response: {}'
     IMAGE_SAVE_PUBLIC_URL = 'Image will be available at: {}'
 
     LOG_SAVE_DATABASE_DESCRIPTION = 'Database conditions/requirements: {}'

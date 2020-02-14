@@ -12,22 +12,22 @@ class TestProcedure:
     """
 
     TEST_CONFIG_PATH = 'tests/test_configs.json'    # :str: Test configurations file location.
-    REQUIRED_TEST_PROPERTIES = {                    # :set: Properties each test configuration must contain.
+    REQUIRED_CONFIG_PROPERTIES = {                  # :set: Properties each test configuration must contain.
         'log_name',                                 # :str: Descriptive test name.
         'function_name',                            # :str: Main function name, trigger of the event chain.
         'params',                                   # :str: Path of the JSON file containing execution parameters.
         'expected'                                  # :str: Expected response objects.
     }
-    REQUIRED_EXPECTED_RESPONSE_PROPERTIES = {       # :set: Expected response required properties.
+    REQUIRED_CONFIG_RESPONSE_PROPERTIES = {         # :set: Expected response required properties.
         'function_name',                            # :str: Name of function that will generate this response via log.
         'execution_confirmation',                   # :str: Log must contain this string for execution to be confirmed.
         'pick_by',                                  # :str: Log must contain this string to be selected for analysis.
         'assert'                                    # :str: Additional assertions to be performed on log.
     }
     LOG_MONITORING_TIMEOUT = 30                     # :int: Maximum log monitoring time.
-    LOG_START_IDENTIFIER = 'START RequestId:'       # :str: Denotes start of a new function log.
-    LOG_END_IDENTIFIER = 'XRAY TraceId:'            # :str: Denotes end of a new function log.
-    REPORT_IDENTIFIER = 'REPORT '                   # :str: Denotes line contains report information.
+    LOG_START_IDENTIFIER = 'START RequestId:'       # :str: Function log start line contains this string.
+    LOG_END_IDENTIFIER = 'XRAY TraceId:'            # :str: Function log end line contains this string.
+    LOG_REPORT_IDENTIFIER = 'REPORT '               # :str: Function log report line contains this string.
 
     def __init__(self, required_tests: list, print_on_screen: bool):
         """
@@ -38,14 +38,14 @@ class TestProcedure:
         """
 
         self.required_tests = required_tests        # :list: Contains names of the tests requested to be executed.
-        self.test_configs = None                    # :dict: Parsed full test configurations JSON file.
+        self.test_configs = None                    # :dict: Parsed test configurations from JSON file.
         self.test_name = None                       # :str: Name of currently executed test.
         self.log_name = None                        # :str: Descriptive name of currently executed test.
         self.function_name = None                   # :str: Name of main trigger function currently being tested.
         self.params = None                          # :str: Path of JSON parameters file currently being used.
         self.expected = []                          # :list: Current expected response objects.
         self.threads = []                           # :list: Current log monitoring threads.
-        self.timeout_flag = False                   # :bool: Timeout flag, is True when exeution time expired/
+        self.timeout_flag = False                   # :bool: Timeout flag, is True when execution time expired.
         self.test_results = OrderedDict()           # :OrderedDict: Stores test results (log diagnoses.)
 
         # Updates on screen log printing flag as per parameter sent.
@@ -84,7 +84,7 @@ class TestProcedure:
 
             # If requested test configuration doesn't contain required properties, alert and abort.
             test_keys = set(self.test_configs.get(test).keys())
-            if self.REQUIRED_TEST_PROPERTIES != test_keys:
+            if self.REQUIRED_CONFIG_PROPERTIES != test_keys:
                 tl.log_error(f"Missing or mistyped test property in test '{test}' - {test_keys}.")
                 return False
 
@@ -98,7 +98,7 @@ class TestProcedure:
             # If requested test responses don't contain required properties, alert and abort.
             for i, expected_response in enumerate(expected_responses):
                 expected_response_keys = set(expected_response.keys())
-                if self.REQUIRED_EXPECTED_RESPONSE_PROPERTIES != expected_response_keys:
+                if self.REQUIRED_CONFIG_RESPONSE_PROPERTIES != expected_response_keys:
                     tl.log_error(f"Missing os mistyped property on test '{test}'s expected response indexed "
                                  f"{i}: {expected_response_keys}")
                     return False
@@ -203,8 +203,19 @@ class TestProcedure:
 
             log_report = results.get('log_report')
             if log_report:
-                report_str = f"Billed: {log_report.get('billed_duration')} | Memory: " \
-                    f"{log_report.get('max_memory_used')} / {log_report.get('memory_size')}."
+                init_duration = log_report.get('init_duration', 'N.A.').replace(' ', '').replace('ms', '')
+                duration = log_report.get('duration', 'N.A.').replace(' ', '').replace('ms', '')
+                billed = log_report.get('billed_duration', 'N.A.')
+                max_memory = log_report.get('max_memory_used', 'N.A.').replace(' ', '').replace('MB', '')
+                memory_size = log_report.get('memory_size', 'N.A.')
+                try:
+                    billed_in_seconds = float(billed.replace('ms', '').strip())/1000
+                    memory_size_in_gb = float(memory_size.replace('MB', '').strip())/1024
+                    gbs = round(billed_in_seconds*memory_size_in_gb, 3)
+                except:
+                    gbs = 'N.A.'
+                report_str = f"Time: {init_duration}/{duration}/{billed} | Memory: {max_memory}/{memory_size} | " \
+                             f"GB-s: {gbs}"
                 tl.log(report_str)
 
             # Exposes criteria by which the log has been selected.
@@ -421,8 +432,8 @@ class TestProcedure:
         # Attempts to locate line containing report identifier.
         report_raw = ''
         for line in log_raw:
-            if cls.REPORT_IDENTIFIER in line:
-                report_raw = line.replace(cls.REPORT_IDENTIFIER, '').strip()
+            if cls.LOG_REPORT_IDENTIFIER in line:
+                report_raw = line.replace(cls.LOG_REPORT_IDENTIFIER, '').strip()
                 break
 
         # If report was not found, return empty dictionary.

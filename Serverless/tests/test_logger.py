@@ -10,7 +10,7 @@ class TestLogger:
 
     LOG_SAVE_PATH = 'tests/logs'                    # :str: Default log saving location.
     HEADER_SIZE = 60                                # :int: Length of the headers.
-    WRAPPER = textwrap.TextWrapper(width=120)       # :TextWrapper: Maximum amount of characters per line.
+    WRAPPER = textwrap.TextWrapper(width=105)       # :TextWrapper: Maximum amount of characters per line.
     LOG_STORAGE = []                                # :list: Logs memory storage.
     ANSI_COLORS = {                                 # :dict: ANSI decorations for terminal.
         'magenta': '\u001b[35m',

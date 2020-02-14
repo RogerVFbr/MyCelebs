@@ -21,7 +21,7 @@
       {
         "function_name": "generate-thumbnail",
         "execution_confirmation": "Function execution completed",
-        "pick_by": "",
+        "pick_by": "test_id_1",
         "assert": []
       }
     ]

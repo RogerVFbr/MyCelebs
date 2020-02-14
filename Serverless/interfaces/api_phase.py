@@ -19,6 +19,7 @@ class APIPhase(ABC):
     err = Errors                                         # :Error: Contains error message objects.
     rsc = Strings                                        # :Strings: Contains general strings.
     env = EnvironmentVariables                           # :EnvironmentVariables: Contains environment variables.
+    latest_invocation_id = None                          # :str: Latest acquired or generated invocation ID.
 
     def __init__(self, prefix: str, phase_name: str, invocation_id: str = None):
         """
@@ -135,6 +136,15 @@ class APIPhase(ABC):
             invocation_id = datetime.now().strftime("%Y-%m-%d-%H-%M-%S-%f")
             self.log(f"Generating new invocation ID: {invocation_id}")
             return invocation_id
+
+    @classmethod
+    def log_successful_execution_msg(cls, invocation_id: str):
+        """
+        Prints latest acquired or generated invocation ID.
+        :return: void.
+        """
+
+        print(cls.rsc.SUCCESSFUL_CLOUD_FUNCTION_EXECUTION.format(invocation_id))
 
     def log(self, msg):
         """

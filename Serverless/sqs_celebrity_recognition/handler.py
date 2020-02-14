@@ -35,4 +35,5 @@ def celeb_recognition(event, context):
     sl = SaveLog(data_to_be_persisted, vl.invocation_id)
     if not sl.status: return
 
-    print(ap.rsc.SUCCESSFUL_CLOUD_FUNCTION_EXECUTION.format(vl.invocation_id))
+    ap.log_successful_execution_msg(sl.invocation_id)
+
