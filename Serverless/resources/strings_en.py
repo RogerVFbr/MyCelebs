@@ -35,7 +35,7 @@ class Strings:
     UNABLE_TO_DELETE_FROM_DATABASE = 'ERROR: Unable to delete from database: {}'
     DELETED_FROM_DATABASE = 'Data deleted from database. Id: {}'
 
-    SUCCESSFUL_CLOUD_FUNCTION_EXECUTION = 'Function execution completed under invocation ID: {}'
+    SUCCESSFUL_CLOUD_FUNCTION_EXECUTION = 'FUNCTION EXECUTION COMPLETED UNDER INVOCATION ID: {}'
 
 
 

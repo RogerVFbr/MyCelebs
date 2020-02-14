@@ -14,13 +14,13 @@
       },
       {
         "function_name": "celeb-recognition",
-        "execution_confirmation": "Function execution completed",
+        "execution_confirmation": "FUNCTION EXECUTION COMPLETED",
         "pick_by": "test_id_1",
         "assert": []
       },
       {
         "function_name": "generate-thumbnail",
-        "execution_confirmation": "Function execution completed",
+        "execution_confirmation": "FUNCTION EXECUTION COMPLETED",
         "pick_by": "test_id_1",
         "assert": []
       }
