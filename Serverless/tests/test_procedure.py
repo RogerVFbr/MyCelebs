@@ -211,7 +211,7 @@ class TestProcedure:
                 try:
                     billed_in_seconds = float(billed.replace('ms', '').strip())/1000
                     memory_size_in_gb = float(memory_size.replace('MB', '').strip())/1024
-                    gbs = round(billed_in_seconds*memory_size_in_gb, 3)
+                    gbs = round(billed_in_seconds*memory_size_in_gb, 5)
                 except:
                     gbs = 'N.A.'
                 report_str = f"Time: {init_duration}/{duration}/{billed} | Memory: {max_memory}/{memory_size} | " \
