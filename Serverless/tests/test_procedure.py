@@ -410,7 +410,10 @@ class TestProcedure:
                 # If open braces count has zeroed out, a dictionary has been formed. Convert and save.
                 if open_braces == 0:
                     current_check += c
-                    dicts.append(eval(current_check.replace('true', 'True').replace('false', 'False')))
+                    try:
+                        dicts.append(eval(current_check.replace('true', 'True').replace('false', 'False')))
+                    except Exception as e:
+                        tl.log_error(f'__parse_dicts_from_strings -> Unable to "eval" extracted dictionary: {str(e)}')
                     current_check = ''
                     continue
 

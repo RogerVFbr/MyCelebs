@@ -9,6 +9,8 @@ CELEBRITIES_TABLE_NAME: ${self:provider.environment.BASE_NAME}-celebrities
 PUBLIC_IMG_BASE_ADDRESS: https://${self:provider.environment.BUCKET_NAME}.s3.amazonaws.com/
 PUBLIC_THUMBNAIL_BASE_ADDRESS: https://${self:provider.environment.THUMBNAIL_BUCKET_NAME}.s3.amazonaws.com/
 
+SMALL_THUMBNAIL_SUFFIX: sml
+
 QUEUE_BASE_URL: https://sqs.${self:provider.region}.amazonaws.com/
 ADD_PICTURE_QUEUE_NAME: ${self:provider.environment.BASE_NAME}-add-pic
 WEB_SCRAP_QUEUE_NAME: ${self:provider.environment.BASE_NAME}-web_scrap

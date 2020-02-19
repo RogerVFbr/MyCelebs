@@ -21,7 +21,7 @@ class LoadImage(APIPhase):
         self.img_bytes_io = None              # :BytesIO: Retrieved image in BytesIO form.
 
         # Initializes APIPhase superclass parameters and procedures
-        super(LoadImage, self).__init__(prefix='SI', phase_name='Load image', invocation_id=invocation_id)
+        super(LoadImage, self).__init__(prefix='LI', phase_name='Load image', invocation_id=invocation_id)
 
     def run(self) -> bool:
         """
@@ -46,8 +46,7 @@ class LoadImage(APIPhase):
 
         # If unable to load image, log and abort.
         if not status:
-            print('shitty request PLEASE FIX THIS LOG')
-            #     self.log(self.rsc.IMAGE_LOAD_API_CONTACTED.format(response))
+            self.log(self.rsc.IMAGE_LOAD_API_FAIL.format(response))
             return False
 
         # Procedure successful

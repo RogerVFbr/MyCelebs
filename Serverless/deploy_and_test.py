@@ -4,19 +4,19 @@ from tests.test_procedure import TestProcedure
 from tests.test_logger import TestLogger as tl
 
 DEPLOY = True
-FULL = False
+FULL = True
 FUNCTIONS_TO_DEPLOY = [
-    'add-picture',
-    'celeb-recognition',
+    # 'add-picture',
+    # 'celeb-recognition',
     'generate-thumbnail'
 ]
 
 UPDATE_REPOSITORY = True
 MAIN_BRANCH = True
-GIT_COMMIT_MESSAGE = 'Thumbnail function progress.'
+GIT_COMMIT_MESSAGE = 'Thumbnail function finish except comments.'
 
 TEST_FUNCTIONS = True
-PRINT_LOGS_ON_SCREEN = True
+PRINT_LOGS_ON_SCREEN = False
 TESTS_TO_PERFORM = [
     'add-picture-integration'
 ]
@@ -103,6 +103,8 @@ class DeployAndTest:
     @staticmethod
     def get_duration(start):
         return str(round(time.time() - start, 3)) + 's'
+
+
 
 
 if __name__ == "__main__":

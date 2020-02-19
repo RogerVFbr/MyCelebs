@@ -14,14 +14,18 @@ class Strings:
     PRE_PROC_NO_EXIF_ORIENTATION = 'No EXIF orientation found on image.'
     PRE_PROC_SUCCESSFULLY_ROTATED = 'Successfully updated image bytes with newly rotated image.'
 
+    PROC_SUCCESSFULLY_GENERATED_TUMBNAIL = 'Generated {}x{} thumbnail from {}x{} sized image.'
+    PROC_UNABLE_TO_GENERATE_TUMBNAIL = 'Unable to generate thumbnail: {}'
+
     RECOGNITION_API_CONTACTED = 'Contacted "recognize_celebrities" API.'
     RECOGNITION_STATUS_SUCCESS = '"recognize_celebrities" API response denotes success.'
     RECOGNITION_DIGESTED_RESPONSE = 'Digested "recognize_celebrities" response: {}'
     RECOGNITION_ORIENTATION_RECOMMENDATION = 'Recommended orientation correction: {}'
     RECOGNITION_ACQUIRED_META_DATA = 'Final image meta data: {}'
 
-    IMAGE_SAVE_API_CONTACTED = 'Saved image to "S3" blob storage API ({}). Response: {}'
-    IMAGE_LOAD_API_CONTACTED = 'Loaded image from "S3" blob storage API. Response: {}'
+    IMAGE_SAVE_API_CONTACTED = 'Saved image to "S3" file storage API ({}). Response: {}'
+    IMAGE_LOAD_API_CONTACTED = 'Loaded image from "S3" file storage API. Response: {}'
+    IMAGE_LOAD_API_FAIL = 'Unable to load image from "S3" file storage API. Response: {}'
     IMAGE_SAVE_PUBLIC_URL = 'Image will be available at: {}'
 
     LOG_SAVE_DATABASE_DESCRIPTION = 'Database conditions/requirements: {}'

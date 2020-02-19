@@ -15,10 +15,10 @@ class AWSS3:
 
         self.bucket = bucket
 
-    def save_file(self, file_bytes: bytes, file_name: str, path: str = '') -> (bool, str, str):
+    def save_file(self, file_bytes, file_name: str, path: str = '') -> (bool, str, str):
         """
         Saves file provided in bytes form with given name at given file path.
-        :param file_bytes: provided file in bytes form.
+        :param file_bytes: provided file in bytes or BytesIO form.
         :param file_name: name to be used once file is stored.
         :param path: '/' (slash) separated strings denoting the folder structure/path on which the file will be saved.
         :return: tuple with 3 values. First is a boolean expressing operation status, second value expresses
@@ -64,7 +64,11 @@ class AWSS3:
         except Exception as e:
             return False, str(e), None
 
-        return True, '', file_byte_string
+        http_status_code = obj.get('ResponseMetadata', {}).get('HTTPStatusCode')
+        if not http_status_code or http_status_code != 200:
+            return False, f'Bad status code: {http_status_code}', None
+
+        return True, f'HTTP status code -> {http_status_code}', file_byte_string
 
 
     @staticmethod
