@@ -4,7 +4,7 @@ from tests.test_procedure import TestProcedure
 from tests.test_logger import TestLogger as tl
 
 DEPLOY = True
-FULL = True
+FULL = False
 FUNCTIONS_TO_DEPLOY = [
     # 'add-picture',
     # 'celeb-recognition',
@@ -13,7 +13,7 @@ FUNCTIONS_TO_DEPLOY = [
 
 UPDATE_REPOSITORY = True
 MAIN_BRANCH = True
-GIT_COMMIT_MESSAGE = 'Thumbnail function finish except comments.'
+GIT_COMMIT_MESSAGE = 'Timing decorators.'
 
 TEST_FUNCTIONS = True
 PRINT_LOGS_ON_SCREEN = False
@@ -27,10 +27,8 @@ class DeployAndTest:
     AUTO_SAVE_BRANCH = f'auto-save-{datetime.now().strftime("%Y-%m-%d")}'
     MAIN_WORKING_BRANCH = 'master'
 
+    @tl.timeit('deploy and test execution')
     def __init__(self):
-
-        # Start duration measuring
-        duration = time.time()
 
         # Deploy service
         self.service_deployment()
@@ -41,14 +39,12 @@ class DeployAndTest:
         # Testing procedures
         self.test_functions()
 
-        # Print procedure time measuring
-        tl.log_alert(f'Elapsed (deploy and test execution): {self.get_duration(duration)}')
-
+        # Save generated logs
         tl.save_logs()
 
+    @tl.timeit(None)
     def service_deployment(self):
         if not DEPLOY: return
-        duration = time.time()
         tl.print_header('SERVICE DEPLOYMENT')
         if FULL:
             self.execute_and_log('sls deploy', 'Deploy full service...')
@@ -56,11 +52,10 @@ class DeployAndTest:
             for function_name in FUNCTIONS_TO_DEPLOY:
                 self.execute_and_log(f'sls deploy function --function {function_name}',
                                      f"Deploy function: '{function_name}'")
-        tl.log_alert(f'Elapsed: {self.get_duration(duration)}')
 
+    @tl.timeit(None)
     def git_procedures(self):
         if not UPDATE_REPOSITORY: return
-        duration = time.time()
         tl.print_header('UPDATE REPOSITORY')
         self.execute_and_log('git branch', 'Present current GIT branches...')
         self.execute_and_log('git add .', 'Execute GIT add all...')
@@ -79,16 +74,15 @@ class DeployAndTest:
                                  f"Switching back to local main branch '{self.MAIN_WORKING_BRANCH}'...")
             self.execute_and_log(f'git branch -D {self.AUTO_SAVE_BRANCH}',
                                  f"Deleting local auto-backup branch...")
-        tl.log_alert(f'Elapsed: {self.get_duration(duration)}')
 
+    @tl.timeit('all tests')
     def test_functions(self):
         if not TEST_FUNCTIONS: return
-        total_duration = time.time()
         tl.print_header('TESTING PROCEDURES')
         TestProcedure(TESTS_TO_PERFORM, PRINT_LOGS_ON_SCREEN)
-        tl.log_alert(f'Elapsed (all tests): {self.get_duration(total_duration)}')
 
-    def execute_and_log(self, execute, log, log_details = True):
+    @staticmethod
+    def execute_and_log(execute, log, log_details = True):
         tl.log_alert(f"{log} ({execute})")
         p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
@@ -99,12 +93,6 @@ class DeployAndTest:
                 else: tl.log_error(log, log_details)
         p.stdout.close()
         p.wait()
-
-    @staticmethod
-    def get_duration(start):
-        return str(round(time.time() - start, 3)) + 's'
-
-
 
 
 if __name__ == "__main__":

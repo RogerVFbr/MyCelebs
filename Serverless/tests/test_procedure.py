@@ -6,8 +6,8 @@ from tests.test_logger import TestLogger as tl
 
 class TestProcedure:
     """
-    Testing procedure object class. Wraps logic around Serverless Framework commands to run service integration tests
-    according to configuration contained in test_configs.json file. Requested tests are sent by parameter via
+    Testing procedure object class. Wraps logic around Serverless Framework CLI commands to run service integration
+    tests according to configuration contained in test_configs.json file. Requested tests are sent by parameter via
     constructor.
     """
 

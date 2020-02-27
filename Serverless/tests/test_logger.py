@@ -1,6 +1,7 @@
 import textwrap
 
 from datetime import datetime
+import time
 
 
 class TestLogger:
@@ -177,3 +178,25 @@ class TestLogger:
         lower_line = ' \\' + "".join(['=' for x in range(len(main)-4)]) + '/'
         cls.log(f'{cls.ANSI_COLORS.get("bold")}{color}{upper_line}\n{main}\n{lower_line}{default}', ignore_wrap=True)
         cls.log('', ignore_wrap=True)
+
+    @classmethod
+    def timeit(cls, name):
+        """
+        Decorator to log current function execution time.
+        :param name: Procedure name to be displayed.
+        :return: void.
+        """
+
+        def decorator(method):
+            def timed(*args, **kw):
+                ts = time.time()
+                result = method(*args, **kw)
+                te = time.time()
+                tf = str(round(te - ts, 3)) + 's'
+                if name:
+                    cls.log_alert(f"Elapsed ({name}): {tf}")
+                else:
+                    cls.log_alert(f"Elapsed: {tf}")
+                return result
+            return timed
+        return decorator
