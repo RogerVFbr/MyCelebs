@@ -1,7 +1,5 @@
-import textwrap
-
+import os, textwrap, time
 from datetime import datetime
-import time
 
 
 class TestLogger:
@@ -12,8 +10,10 @@ class TestLogger:
     LOG_SAVE_PATH = 'tests/logs'                    # :str: Default log saving location.
     HEADER_SIZE = 60                                # :int: Length of the headers.
     WRAPPER = textwrap.TextWrapper(width=105)       # :TextWrapper: Maximum amount of characters per line.
+    MAXIMUM_LOG_FILES_STORED = 5                    # :int: Maximum amount of stored log files.
     LOG_STORAGE = []                                # :list: Logs memory storage.
-    ANSI_COLORS = {                                 # :dict: ANSI decorations for terminal.
+    TIMEZONE = 'UTC'
+    ANSI = {                                        # :dict: ANSI decorations for terminal.
         'magenta': '\u001b[35m',
         'yellow': '\u001b[33m',
         'red': '\u001b[31m',
@@ -34,9 +34,9 @@ class TestLogger:
         :param print_on_screen: Flags whether message is to be printed on screen of only on file.
         :return: void
         """
-        yellow, reversed, default = cls.ANSI_COLORS.get('yellow'), cls.ANSI_COLORS.get('reversed'), \
-                                    cls.ANSI_COLORS.get('default')
-        msg = f"{yellow}{reversed}{datetime.utcnow().strftime('%H:%M:%S')}:UTC:{default}{yellow} {msg}{default}"
+
+        yellow, reverse, default = cls.ANSI.get('yellow'), cls.ANSI.get('reversed'), cls.ANSI.get('default')
+        msg = f"{yellow}{reverse}{cls.__get_now('%H:%M:%S')}{default}{yellow} {msg}{default}"
         cls.log(msg, print_on_screen)
 
     @classmethod
@@ -47,9 +47,9 @@ class TestLogger:
         :param print_on_screen: Flags whether message is to be printed on screen of only on file.
         :return: void
         """
-        red, reversed, default = cls.ANSI_COLORS.get('red'), cls.ANSI_COLORS.get('reversed'), \
-                                  cls.ANSI_COLORS.get('default')
-        msg = f"{red}{reversed}{datetime.utcnow().strftime('%H:%M:%S')}:UTC:{default}{red} {msg}{default}"
+
+        red, reverse, default = cls.ANSI.get('red'), cls.ANSI.get('reversed'), cls.ANSI.get('default')
+        msg = f"{red}{reverse}{cls.__get_now('%H:%M:%S')}{default}{red} {msg}{default}"
         cls.log(msg, print_on_screen)
 
     @classmethod
@@ -60,7 +60,7 @@ class TestLogger:
         :return: String containing formatted message.
         """
 
-        return f"{cls.ANSI_COLORS.get('underline')}{msg}{cls.ANSI_COLORS.get('default')}"
+        return f"{cls.ANSI.get('underline')}{msg}{cls.ANSI.get('default')}"
 
     @classmethod
     def bold(cls, msg: str) -> str:
@@ -70,7 +70,7 @@ class TestLogger:
         :return: String containing formatted message.
         """
 
-        return f"{cls.ANSI_COLORS.get('bold')}{msg}{cls.ANSI_COLORS.get('default')}"
+        return f"{cls.ANSI.get('bold')}{msg}{cls.ANSI.get('default')}"
 
     @classmethod
     def invert(cls, msg: str) -> str:
@@ -80,7 +80,7 @@ class TestLogger:
         :return: String containing formatted message.
         """
 
-        return f"{cls.ANSI_COLORS.get('invert')}{msg}{cls.ANSI_COLORS.get('default')}"
+        return f"{cls.ANSI.get('invert')}{msg}{cls.ANSI.get('default')}"
 
     @classmethod
     def paint_status(cls, msg: str, success: bool) -> str:
@@ -92,9 +92,9 @@ class TestLogger:
         """
 
         if success:
-            return f"{cls.ANSI_COLORS.get('green')}{msg}{cls.ANSI_COLORS.get('default')}"
+            return f"{cls.ANSI.get('green')}{msg}{cls.ANSI.get('default')}"
         else:
-            return f"{cls.ANSI_COLORS.get('red')}{msg}{cls.ANSI_COLORS.get('default')}"
+            return f"{cls.ANSI.get('red')}{msg}{cls.ANSI.get('default')}"
 
     @classmethod
     def paint_status_bg(cls, msg: str, success: bool) -> str:
@@ -106,11 +106,9 @@ class TestLogger:
         """
 
         if success:
-            return f"{cls.ANSI_COLORS.get('green')}{cls.ANSI_COLORS.get('reversed')}" \
-                f"{msg}{cls.ANSI_COLORS.get('default')}"
+            return f"{cls.ANSI.get('green')}{cls.ANSI.get('reversed')}{msg}{cls.ANSI.get('default')}"
         else:
-            return f"{cls.ANSI_COLORS.get('red')}{cls.ANSI_COLORS.get('reversed')}" \
-                f"{msg}{cls.ANSI_COLORS.get('default')}"
+            return f"{cls.ANSI.get('red')}{cls.ANSI.get('reversed')}{msg}{cls.ANSI.get('default')}"
 
     @classmethod
     def get_status_string(cls, status: bool) -> str:
@@ -121,12 +119,10 @@ class TestLogger:
         """
 
         # If status is positive (true), returns standard stylized 'test passed' string.
-        if status:
-            return cls.paint_status('(+)', True)
+        if status: return cls.paint_status('(+)', True)
 
         # If status is negative (false), returns standard stylized 'test failed' string.
-        else:
-            return cls.paint_status('(-)', False)
+        else: return cls.paint_status('(-)', False)
 
     @classmethod
     def log(cls, line, print_on_screen=True, ignore_wrap=False):
@@ -137,6 +133,7 @@ class TestLogger:
         :param ignore_wrap: Flag to ignore line wrapper if needed.
         :return: void.
         """
+
         if ignore_wrap:
             if print_on_screen: print(line)
             cls.LOG_STORAGE.append(line)
@@ -153,8 +150,17 @@ class TestLogger:
         :return: void.
         """
 
-        log_path_and_name = f'{cls.LOG_SAVE_PATH}/{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.txt'
-        strings_to_replace = [v for k, v in cls.ANSI_COLORS.items()]
+        # Removes oldest log file if maximum threshold has been reached.
+        path = cls.LOG_SAVE_PATH
+        log_files = [f"{path}/{name}" for name in os.listdir(path) if os.path.isfile(os.path.join(path, name))]
+        no_of_logs = len(log_files)
+        if no_of_logs >= cls.MAXIMUM_LOG_FILES_STORED:
+            oldest_file = min(log_files, key=os.path.getctime)
+            os.remove(oldest_file)
+
+        # Saves current log lines in new log file.
+        log_path_and_name = f'{path}/{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.txt'
+        strings_to_replace = [v for k, v in cls.ANSI.items()]
         with open(log_path_and_name, "w") as txt_file:
             for line in cls.LOG_STORAGE:
                 for reps in strings_to_replace:
@@ -169,15 +175,28 @@ class TestLogger:
         :return: void
         """
 
-        color, default = cls.ANSI_COLORS.get('magenta'), cls.ANSI_COLORS.get('default')
+        color, default = cls.ANSI.get('magenta'), cls.ANSI.get('default')
         size = cls.HEADER_SIZE
         cls.log('', ignore_wrap=True)
         main = '{' + "".join([' ' for x in range(int(size/2)-int((len(content)/2)))]) + content
         main += "".join([' ' for x in range(size-len(main))]) + '}'
         upper_line = ' /' + "".join(['=' for x in range(len(main)-4)]) + '\\'
         lower_line = ' \\' + "".join(['=' for x in range(len(main)-4)]) + '/'
-        cls.log(f'{cls.ANSI_COLORS.get("bold")}{color}{upper_line}\n{main}\n{lower_line}{default}', ignore_wrap=True)
+        cls.log(f'{cls.ANSI.get("bold")}{color}{upper_line}\n{main}\n{lower_line}{default}', ignore_wrap=True)
         cls.log('', ignore_wrap=True)
+
+    @classmethod
+    def __get_now(cls, formatting: str = '%H:%M:%S') -> str:
+        """
+        Returns current formatted time in configured timezone.
+        :param formatting: Time format.
+        :return: String containing current time.
+        """
+
+        if cls.TIMEZONE == 'UTC':
+            return f"{datetime.utcnow().strftime(formatting)}:UTC:"
+        else:
+            return f"{datetime.now().strftime(formatting)}:LCL:"
 
     @classmethod
     def timeit(cls, name):
@@ -188,7 +207,7 @@ class TestLogger:
         """
 
         def decorator(method):
-            def timed(*args, **kw):
+            def measure(*args, **kw):
                 ts = time.time()
                 result = method(*args, **kw)
                 te = time.time()
@@ -198,5 +217,5 @@ class TestLogger:
                 else:
                     cls.log_alert(f"Elapsed: {tf}")
                 return result
-            return timed
+            return measure
         return decorator

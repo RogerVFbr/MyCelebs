@@ -31,20 +31,16 @@ class DeployAndTest:
     def __init__(self):
 
         # Deploy service
-        self.service_deployment()
+        if DEPLOY: self.service_deployment()
 
         # Git procedures
-        self.git_procedures()
+        if UPDATE_REPOSITORY: self.git_procedures()
 
         # Testing procedures
-        self.test_functions()
-
-        # Save generated logs
-        tl.save_logs()
+        if TEST_FUNCTIONS: self.test_functions()
 
     @tl.timeit(None)
     def service_deployment(self):
-        if not DEPLOY: return
         tl.print_header('SERVICE DEPLOYMENT')
         if FULL:
             self.execute_and_log('sls deploy', 'Deploy full service...')
@@ -55,7 +51,6 @@ class DeployAndTest:
 
     @tl.timeit(None)
     def git_procedures(self):
-        if not UPDATE_REPOSITORY: return
         tl.print_header('UPDATE REPOSITORY')
         self.execute_and_log('git branch', 'Present current GIT branches...')
         self.execute_and_log('git add .', 'Execute GIT add all...')
@@ -77,7 +72,6 @@ class DeployAndTest:
 
     @tl.timeit('all tests')
     def test_functions(self):
-        if not TEST_FUNCTIONS: return
         tl.print_header('TESTING PROCEDURES')
         TestProcedure(TESTS_TO_PERFORM, PRINT_LOGS_ON_SCREEN)
 
@@ -97,3 +91,5 @@ class DeployAndTest:
 
 if __name__ == "__main__":
     dt = DeployAndTest()
+    tl.save_logs()
+

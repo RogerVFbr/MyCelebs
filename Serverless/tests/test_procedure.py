@@ -18,7 +18,7 @@ class TestProcedure:
         'params',                                   # :str: Path of the JSON file containing execution parameters.
         'expected'                                  # :str: Expected response objects.
     }
-    REQUIRED_CONFIG_RESPONSE_PROPERTIES = {         # :set: Expected response required properties.
+    REQUIRED_CONFIG_RESPONSE_PROPERTIES = {         # :set: Properties required on expected response.
         'function_name',                            # :str: Name of function that will generate this response via log.
         'execution_confirmation',                   # :str: Log must contain this string for execution to be confirmed.
         'pick_by',                                  # :str: Log must contain this string to be selected for analysis.
@@ -56,6 +56,9 @@ class TestProcedure:
 
         # Runs tests.
         self.__run_tests()
+
+        # Test concluded, present test results.
+        self.__present_test_results()
 
     def __parse_test_configs(self) -> bool:
         """
@@ -166,9 +169,6 @@ class TestProcedure:
                                  f"({self.LOG_MONITORING_TIMEOUT}s)")
                     self.timeout_flag = True
 
-            # Test concluded, log results.
-            self.__present_test_results()
-
     def __present_test_results(self):
         """
         Formats and logs acquired test results.
@@ -177,8 +177,6 @@ class TestProcedure:
 
         # Prepares data
         test_result = self.test_results.get(self.test_name)
-        log_indent_title = ""
-        log_indent_test = ""
 
         # Informs developer testing has been concluded.
         tl.log_alert(f"Test '{self.test_name}' completed. Results:")
@@ -188,7 +186,7 @@ class TestProcedure:
         for function_name, results in test_result.items():
 
             # Logs analyzed function name.
-            tl.log(tl.underline(f"{log_indent_title}-> Function '{function_name}'"))
+            tl.log(tl.underline(f"-> Function '{function_name}'"))
 
             # Explodes function execution logs.
             execution_confirmation = results.get('execution_confirmation')
@@ -196,11 +194,12 @@ class TestProcedure:
             log_raw = results.get('log_raw')
             if log_raw:
                 for log_line in log_raw:
-                    tl.log(f"{log_indent_test}{log_line}", print_on_screen=print_on_screen)
+                    tl.log(f"{log_line}", print_on_screen=print_on_screen)
                 tl.log('.', print_on_screen=print_on_screen)
             else:
-                tl.log(f"{log_indent_test}No log captured.", print_on_screen=print_on_screen)
+                tl.log(f"No log captured.", print_on_screen=print_on_screen)
 
+            # Prepares and displays log report data such as duration and memory usage
             log_report = results.get('log_report')
             if log_report:
                 init_duration = log_report.get('init_duration', 'N.A.').replace(' ', '').replace('ms', '')
@@ -227,22 +226,22 @@ class TestProcedure:
             assertion_success = 0
 
             # Shows execution confirmation status
-            tl.log(f"{log_indent_test}{tl.get_status_string(execution_confirmation)} Execution confirmation.")
+            tl.log(f"{tl.get_status_string(execution_confirmation)} Execution confirmation.")
             if execution_confirmation: assertion_success += 1
 
-            # Shows individual function assertions statuses.
+            # Shows individual function assertion statuses.
             assertion_list = list(results.items())[4:]
             for assertion, status in assertion_list:
-                tl.log(f"{log_indent_test}{tl.get_status_string(status)} {assertion}")
+                tl.log(f"{tl.get_status_string(status)} {assertion}")
                 if status: assertion_success += 1
 
             # Shows final function assertion status.
             assertion_no = len(assertion_list)
             if assertion_no+1 == assertion_success:
-                tl.log(tl.paint_status_bg(f"'{function_name}' assertion PASSED ({assertion_success}/{assertion_no + 1} "
+                tl.log(tl.paint_status_bg(f"'{function_name}' assertion PASSED ({assertion_success}/{assertion_no+1} "
                                       f"checks).", True))
             else:
-                tl.log(tl.paint_status_bg(f"'{function_name}' assertion FAILED ({assertion_success}/{assertion_no + 1} "
+                tl.log(tl.paint_status_bg(f"'{function_name}' assertion FAILED ({assertion_success}/{assertion_no+1} "
                                     f"checks).", False))
             tl.log('.')
 
@@ -272,7 +271,7 @@ class TestProcedure:
             if self.LOG_START_IDENTIFIER in line and not log_open:
                 log_open = True
 
-            # Finishes a log capture if a 'lod end identifier' has been detected.
+            # Finishes a log capture if a 'log end identifier' has been detected.
             elif self.LOG_END_IDENTIFIER in line and log_open:
                 log_raw.append(line)
                 log_open = False
