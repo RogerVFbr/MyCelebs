@@ -1,6 +1,6 @@
 from interfaces.api_phase import APIPhase
 from services.aws_rekognition import AWSRekognition
-from sqs_celebrity_recognition.models.celebrity import Celebrity
+from handlers.sqs_celebrity_recognition.models.celebrity import Celebrity
 
 
 class RecognizeCelebrity(APIPhase):

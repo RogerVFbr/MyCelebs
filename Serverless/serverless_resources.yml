@@ -42,11 +42,11 @@ AddPictureQueue:
     QueueName: ${self:provider.environment.ADD_PICTURE_QUEUE_NAME}
     MessageRetentionPeriod: 300
 
-#WebScrapQueue:
-#  Type: "AWS::SQS::Queue"
-#  Properties:
-#    QueueName: ${self:provider.environment.WEB_SCRAP_QUEUE_NAME}
-#    MessageRetentionPeriod: 300
+WebScrapQueue:
+  Type: "AWS::SQS::Queue"
+  Properties:
+    QueueName: ${self:provider.environment.WEB_SCRAP_QUEUE_NAME}
+    MessageRetentionPeriod: 300
 
 PicturesTable:
   Type: AWS::DynamoDB::Table

@@ -1,5 +1,5 @@
 add-picture:
-  handler: http_add_picture/handler.add_picture
+  handler: handlers/http_add_picture/handler.add_picture
   layers:
     - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:9
   events:
@@ -10,10 +10,10 @@ add-picture:
         cors: true
         request:
           schema:
-            application/json: ${file(http_add_picture/validation_schema/add_picture_schema.json)}
+            application/json: ${file(handlers/http_add_picture/validation_schema/add_picture_schema.json)}
 
 celeb-recognition:
-  handler: sqs_celebrity_recognition/handler.celeb_recognition
+  handler: handlers/sqs_celebrity_recognition/handler.celeb_recognition
   events:
     - sqs:
         arn:
@@ -22,8 +22,18 @@ celeb-recognition:
             - Arn
         batchSize: 1
 
+web-scraper:
+  handler: handlers/sqs_web_scraper/handler.web_scraper
+  events:
+    - sqs:
+        arn:
+          Fn::GetAtt:
+            - WebScrapQueue
+            - Arn
+        batchSize: 1
+
 generate-thumbnail:
-  handler: s3_generate_thumbnail/handler.generate_thumbnail
+  handler: handlers/s3_generate_thumbnail/handler.generate_thumbnail
   layers:
     - arn:aws:lambda:${self:provider.region}:113088814899:layer:Klayers-python37-Pillow:9
   events:

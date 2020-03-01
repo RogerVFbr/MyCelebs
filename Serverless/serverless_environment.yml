@@ -1,7 +1,7 @@
 BASE_NAME: ${self:service}-${self:provider.stage}
 
-BUCKET_NAME: ${self:provider.environment.BASE_NAME}-pictures
-THUMBNAIL_BUCKET_NAME: ${self:provider.environment.BASE_NAME}-thumbnails
+BUCKET_NAME: ${self:provider.environment.BASE_NAME}-pics
+THUMBNAIL_BUCKET_NAME: ${self:provider.environment.BASE_NAME}-thumbs
 
 PICTURES_TABLE_NAME: ${self:provider.environment.BASE_NAME}-pictures
 CELEBRITIES_TABLE_NAME: ${self:provider.environment.BASE_NAME}-celebrities

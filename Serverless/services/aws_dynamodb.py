@@ -52,6 +52,9 @@ class AWSDynamoDB:
         if not http_status_code or http_status_code != 200:
             raise Exception(f'Bad status code: {http_status_code}')
 
+    def query(self):
+        pass
+
     def delete_by_hash(self, user_id):
         table = boto3.resource('dynamodb').Table(self.table_name)
         items = table.query(KeyConditionExpression=Key('userId').eq(user_id))

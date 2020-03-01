@@ -1,7 +1,6 @@
-from sqs_celebrity_recognition.validation import Validation
-from sqs_celebrity_recognition.celebrity_recognition import RecognizeCelebrity
-from sqs_celebrity_recognition.delete_data import DeleteData
-from sqs_celebrity_recognition.save_log import SaveLog
+from handlers.sqs_celebrity_recognition.save_data import SaveData
+from handlers.sqs_celebrity_recognition.validation import Validation
+from handlers.sqs_celebrity_recognition.save_log import SaveLog
 from interfaces.api_phase import APIPhase as ap
 from services.aws_sqs import AWSSQS
 
@@ -35,5 +34,16 @@ def celeb_recognition(event, context):
     sl = SaveLog(data_to_be_persisted, vl.invocation_id)
     if not sl.status: return
 
-    ap.log_successful_execution_msg(sl.invocation_id)
+    data_to_be_queued = {
+        'id': data_to_be_persisted['id'],
+        'celebrities': data_to_be_persisted['celebrities'],
+        'invocation_id': vl.invocation_id
+    }
+
+    # Save to queue
+    sl = SaveData(AWSSQS(ap.env.QUEUE_BASE_URL, ap.env.WEB_SCRAP_QUEUE_NAME), data_to_be_queued,
+                  vl.invocation_id)
+    if not sl.status: return
+
+    ap.log_successful_execution_msg(vl.invocation_id)
 

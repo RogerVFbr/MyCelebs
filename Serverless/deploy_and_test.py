@@ -1,24 +1,26 @@
-import os, subprocess, time
+import os, subprocess
 from datetime import datetime
 from tests.test_procedure import TestProcedure
 from tests.test_logger import TestLogger as tl
 
-DEPLOY = True
-FULL = False
+DEPLOY = False
+FULL = True
 FUNCTIONS_TO_DEPLOY = [
-    # 'add-picture',
+    'add-picture',
     # 'celeb-recognition',
-    'generate-thumbnail'
+    # 'generate-thumbnail',
+    # 'web-scraper'
 ]
 
 UPDATE_REPOSITORY = True
 MAIN_BRANCH = True
-GIT_COMMIT_MESSAGE = 'Timing decorators.'
+GIT_COMMIT_MESSAGE = 'Web scraping start.'
 
 TEST_FUNCTIONS = True
 PRINT_LOGS_ON_SCREEN = False
 TESTS_TO_PERFORM = [
-    'add-picture-integration'
+    # 'add-picture-integration',
+    'web-scraper'
 ]
 
 
@@ -26,6 +28,16 @@ class DeployAndTest:
 
     AUTO_SAVE_BRANCH = f'auto-save-{datetime.now().strftime("%Y-%m-%d")}'
     MAIN_WORKING_BRANCH = 'master'
+
+    SLS_DEPLOY = 'sls deploy'
+    SLS_DEPLOY_FUNCTION = 'sls deploy function --function {}'
+    GIT_BRANCH = 'git branch'
+    GIT_BRANCH_DELETE = 'git branch -D {}'
+    GIT_ADD_ALL = 'git add .'
+    GIT_COMMIT = 'git commit -m {}'
+    GIT_PUSH = 'git push origin {}'
+    GIT_CHECKOUT_NEW_BRANCH = 'git checkout -b {}'
+    GIT_CHECKOUT = 'git checkout {}'
 
     @tl.timeit('deploy and test execution')
     def __init__(self):
@@ -43,31 +55,29 @@ class DeployAndTest:
     def service_deployment(self):
         tl.print_header('SERVICE DEPLOYMENT')
         if FULL:
-            self.execute_and_log('sls deploy', 'Deploy full service...')
+            self.execute(self.SLS_DEPLOY, 'Deploy full service...')
         else:
             for function_name in FUNCTIONS_TO_DEPLOY:
-                self.execute_and_log(f'sls deploy function --function {function_name}',
-                                     f"Deploy function: '{function_name}'")
+                self.execute(self.SLS_DEPLOY_FUNCTION.format(function_name), f"Deploy function: '{function_name}'")
 
     @tl.timeit(None)
     def git_procedures(self):
         tl.print_header('UPDATE REPOSITORY')
-        self.execute_and_log('git branch', 'Present current GIT branches...')
-        self.execute_and_log('git add .', 'Execute GIT add all...')
-        self.execute_and_log(f'git commit -m "{GIT_COMMIT_MESSAGE}"',
-                             f"Committing with message: '{GIT_COMMIT_MESSAGE}'...")
+        self.execute(self.GIT_BRANCH, 'Present current GIT branches...')
+        self.execute(self.GIT_ADD_ALL, 'Execute GIT add all...')
+        self.execute(self.GIT_COMMIT.format(f'"{GIT_COMMIT_MESSAGE}"'), f"Committing with message: '{GIT_COMMIT_MESSAGE}'...")
 
         if MAIN_BRANCH:
-            self.execute_and_log(f'git push origin {self.MAIN_WORKING_BRANCH}',
-                                 f"Executing GIT push to '{self.MAIN_WORKING_BRANCH}' branch...")
+            self.execute(self.GIT_PUSH.format(self.MAIN_WORKING_BRANCH),
+                         f"GIT pushing to '{self.MAIN_WORKING_BRANCH}' branch...")
         else:
-            self.execute_and_log(f'git checkout -b {self.AUTO_SAVE_BRANCH}',
+            self.execute(self.GIT_CHECKOUT_NEW_BRANCH.format(self.AUTO_SAVE_BRANCH),
                                  f'Creating local auto-backup branch "{self.AUTO_SAVE_BRANCH}"...')
-            self.execute_and_log(f'git push origin {self.AUTO_SAVE_BRANCH}',
+            self.execute(self.GIT_PUSH.format(self.AUTO_SAVE_BRANCH),
                                  f"Pushing to remote auto-backup branch...")
-            self.execute_and_log(f'git checkout {self.MAIN_WORKING_BRANCH}',
+            self.execute(self.GIT_CHECKOUT.format(self.MAIN_WORKING_BRANCH),
                                  f"Switching back to local main branch '{self.MAIN_WORKING_BRANCH}'...")
-            self.execute_and_log(f'git branch -D {self.AUTO_SAVE_BRANCH}',
+            self.execute(self.GIT_BRANCH_DELETE.format(self.AUTO_SAVE_BRANCH),
                                  f"Deleting local auto-backup branch...")
 
     @tl.timeit('all tests')
@@ -76,7 +86,7 @@ class DeployAndTest:
         TestProcedure(TESTS_TO_PERFORM, PRINT_LOGS_ON_SCREEN)
 
     @staticmethod
-    def execute_and_log(execute, log, log_details = True):
+    def execute(execute, log, log_details = True):
         tl.log_alert(f"{log} ({execute})")
         p = subprocess.Popen(execute, bufsize=1, stdin=open(os.devnull), shell=True, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)

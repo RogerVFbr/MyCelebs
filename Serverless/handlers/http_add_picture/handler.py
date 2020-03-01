@@ -1,7 +1,7 @@
-from http_add_picture.validation import Validation
-from http_add_picture.image_pre_processing import ImagePreProcessing
-from http_add_picture.save_image import SaveImage
-from http_add_picture.save_data import SaveData
+from handlers.http_add_picture.validation import Validation
+from handlers.http_add_picture.image_pre_processing import ImagePreProcessing
+from handlers.http_add_picture.save_image import SaveImage
+from handlers.http_add_picture.save_data import SaveData
 from interfaces.api_phase import APIPhase as ap
 from services.aws_sqs import AWSSQS
 

@@ -1,13 +1,12 @@
-import json, threading, subprocess, time, os
+import json, threading, subprocess, time, os, ast
 from collections import OrderedDict
-
 from tests.test_logger import TestLogger as tl
 
 
 class TestProcedure:
     """
     Testing procedure object class. Wraps logic around Serverless Framework CLI commands to run service integration
-    tests according to configuration contained in test_configs.json file. Requested tests are sent by parameter via
+    tests following configurations contained in test_configs.json file. Requested tests are sent by parameter via
     constructor.
     """
 
@@ -62,7 +61,7 @@ class TestProcedure:
 
     def __parse_test_configs(self) -> bool:
         """
-        Parses and validates test configurations JSON file located on path discribed at class property
+        Parses and validates test configurations JSON file located on path described at class property
         TEST_CONFIG_PATH.
         :return: boolean. Value expresses whether procedure has executed successfully or not.
         """
@@ -171,7 +170,7 @@ class TestProcedure:
 
     def __present_test_results(self):
         """
-        Formats and logs acquired test results.
+        Formats and presents acquired test results on screen.
         :return: void
         """
 
@@ -183,6 +182,8 @@ class TestProcedure:
         tl.log('.')
 
         # Checks test results per function.
+        # present_order = [x['function_name'] for x in self.expected]
+        # tl.log(str(test_result.items()))
         for function_name, results in test_result.items():
 
             # Logs analyzed function name.
@@ -199,7 +200,7 @@ class TestProcedure:
             else:
                 tl.log(f"No log captured.", print_on_screen=print_on_screen)
 
-            # Prepares and displays log report data such as duration and memory usage
+            # Prepares and displays log report data such as duration and memory usage.
             log_report = results.get('log_report')
             if log_report:
                 init_duration = log_report.get('init_duration', 'N.A.').replace(' ', '').replace('ms', '')
@@ -277,9 +278,7 @@ class TestProcedure:
                 log_open = False
                 if self.timeout_flag: return
                 if self.__parse_log(log_raw, expected): return
-                else:
-                    log_raw = []
-                    continue
+                else: log_raw = []
 
             # If a log capture is ongoing, capture this line.
             if log_open:
@@ -410,7 +409,7 @@ class TestProcedure:
                 if open_braces == 0:
                     current_check += c
                     try:
-                        dicts.append(eval(current_check.replace('true', 'True').replace('false', 'False')))
+                        dicts.append(ast.literal_eval(current_check.replace('true', 'True').replace('false', 'False')))
                     except Exception as e:
                         tl.log_error(f'__parse_dicts_from_strings -> Unable to "eval" extracted dictionary: {str(e)}')
                     current_check = ''
@@ -460,7 +459,7 @@ class TestProcedure:
         structure.
         :param data: Data structure to be traversed.
         :param prop: Property name to be located.
-        :return:
+        :return: Found value.
         """
 
         if isinstance(data, dict):
@@ -478,10 +477,3 @@ class TestProcedure:
 
         else:
             return None
-
-
-
-
-
-
-

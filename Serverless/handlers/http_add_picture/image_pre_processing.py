@@ -2,9 +2,9 @@ import io
 
 from PIL import Image
 
-from http_add_picture.models.img_meta_data import ImgMetaData
+from handlers.http_add_picture.models.img_meta_data import ImgMetaData
 from interfaces.api_phase import APIPhase
-from http_add_picture.exif_utilities import ExifUtilities as eu
+from handlers.http_add_picture.exif_utilities import ExifUtilities as eu
 
 
 class ImagePreProcessing(APIPhase):

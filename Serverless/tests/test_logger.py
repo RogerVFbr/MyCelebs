@@ -31,7 +31,7 @@ class TestLogger:
         """
         Logs default alert message.
         :param msg: Message to be logged.
-        :param print_on_screen: Flags whether message is to be printed on screen of only on file.
+        :param print_on_screen: Flags whether message is to be printed on screen or only on file.
         :return: void
         """
 
