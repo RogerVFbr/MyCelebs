@@ -24,12 +24,6 @@
         "execution_confirmation": "FUNCTION EXECUTION COMPLETED",
         "pick_by": "test_id_1",
         "assert": []
-      },
-      {
-        "function_name": "web-scraper",
-        "execution_confirmation": "FUNCTION EXECUTION COMPLETED",
-        "pick_by": "test_id_1",
-        "assert": []
       }
     ]
   },
