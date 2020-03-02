@@ -1,8 +1,8 @@
 from handlers.http_add_picture.validation import Validation
 from handlers.http_add_picture.image_pre_processing import ImagePreProcessing
 from handlers.http_add_picture.save_image import SaveImage
-from handlers.http_add_picture.save_data import SaveData
 from interfaces.api_phase import APIPhase as ap
+from interfaces.save_log import SaveLog
 from services.aws_sqs import AWSSQS
 
 
@@ -29,10 +29,10 @@ def add_picture(event, context):
         return si.failed_return_object
     pp.img_meta_data.size = si.img_size
 
-    # Assemble log object
-    data_to_be_persisted = {
-        'id': vl.user_id,
-        'time': vl.invocation_id,
+    # Assemble log object and save to queue.
+    data_to_queue = {
+        'user_id': vl.user_id,
+        'picture_id': vl.invocation_id,
         'file_name': si.file_name,
         'api_metrics': {'add_picture': si.get_metrics_snapshot()},
         'img_name': vl.img_name,
@@ -47,13 +47,16 @@ def add_picture(event, context):
             'exif': pp.img_meta_data.exif
         }
     }
+    sq = SaveLog(
+        repository=AWSSQS(ap.env.QUEUE_BASE_URL, ap.env.ADD_PICTURE_QUEUE_NAME),
+        data=data_to_queue,
+        prefix='SQ',
+        phase_name='Save to queue',
+        invocation_id=vl.invocation_id
+    )
+    if not sq.status: return
 
-    # Save log
-    sl = SaveData(AWSSQS(ap.env.QUEUE_BASE_URL, ap.env.ADD_PICTURE_QUEUE_NAME), data_to_be_persisted, vl.invocation_id)
-    if not sl.status:
-        return sl.failed_return_object
-
-    ap.log_successful_execution_msg(sl.invocation_id)
+    ap.log_successful_execution_msg(vl.invocation_id)
 
     # Return success object
     return ap.get_return_object(
@@ -62,6 +65,6 @@ def add_picture(event, context):
         msg_dev='Success',
         msg_user='Success',
         img_meta_data=pp.img_meta_data.__dict__,
-        # api_metrics=sl.get_metrics()
+        # api_metrics=sq.get_metrics()
         api_metrics=si.get_metrics()
     )

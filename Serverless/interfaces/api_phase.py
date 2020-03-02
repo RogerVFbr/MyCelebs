@@ -61,6 +61,7 @@ class APIPhase(ABC):
         # Flag and log phase status as successful (true).
         self.status = True
         self.log(self.rsc.PHASE_SUCCESSFUL.format(self.phase_name, elapsed))
+        print('.')
 
     @abstractmethod
     def run(self) -> bool:

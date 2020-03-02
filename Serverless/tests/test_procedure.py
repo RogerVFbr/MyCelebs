@@ -56,9 +56,6 @@ class TestProcedure:
         # Runs tests.
         self.__run_tests()
 
-        # Test concluded, present test results.
-        self.__present_test_results()
-
     def __parse_test_configs(self) -> bool:
         """
         Parses and validates test configurations JSON file located on path described at class property
@@ -167,6 +164,9 @@ class TestProcedure:
                     tl.log_error(f"Function '{thread_entry['function_name']}' log monitoring has timed out. "
                                  f"({self.LOG_MONITORING_TIMEOUT}s)")
                     self.timeout_flag = True
+
+            # Test concluded, present test results.
+            self.__present_test_results()
 
     def __present_test_results(self):
         """

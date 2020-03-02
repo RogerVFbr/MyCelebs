@@ -1,7 +1,7 @@
 class Strings:
 
-    PHASE_START = "Initializing '{}' phase..."
-    PHASE_SUCCESSFUL = "Successfully completed '{}' phase procedures. Elapsed: {}s."
+    PHASE_START = "'{}' phase initializing..."
+    PHASE_SUCCESSFUL = "'{}' phase completed. Elapsed: {}s."
 
     VALIDATION_EXTRACTED_BODY_PAYLOAD = 'Extracted payload from request object.'
     VALIDATION_DECODED_BASE64 = 'Decoded BASE64 image string to bytes.'
@@ -29,7 +29,12 @@ class Strings:
     IMAGE_SAVE_PUBLIC_URL = 'Image will be available at: {}'
 
     LOG_SAVE_DATABASE_DESCRIPTION = 'Database conditions/requirements: {}'
-    LOG_SAVE_SUCCESSFUL = 'Saved log to database: {}'
+    LOG_SAVE_SUCCESSFUL = "Saved log to database: {}"
+    LOG_LOAD_SUCCESSFUL = 'Acquired response from database: {}'
+    LOG_LOAD_FAILED = 'Unable to acquire from database: {}'
+    UNABLE_TO_EXTRACT_LOG_COUNT = 'Unable extract log count.'
+    UNIQUE_CELEBRITY = "'{}' is unique in this user's database. (Count: {} | Hash: '{}' | Range: '{}')"
+    DUPLICATED_CELEBRITY = "'{}' already exists in this user's database. (Count: {} | Hash: '{}' | Range: '{}')"
 
     INAPPROPRIATE_EVENT_NAME = 'Ignoring inappropriate event type: {}'
     APPROPRIATE_EVENT_NAME = 'Proper event type detected, proceeding with execution: {}'

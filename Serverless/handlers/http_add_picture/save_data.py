@@ -18,7 +18,7 @@ class SaveData(APIPhase):
         self.data = data                                 # :dict: data to be stored.
 
         # Initializes APIPhase superclass parameters and procedures
-        super(SaveData, self).__init__(prefix='SD', phase_name='Save log', invocation_id=invocation_id)
+        super(SaveData, self).__init__(prefix='SQ', phase_name='Save to queue', invocation_id=invocation_id)
 
     def run(self):
         """

@@ -81,7 +81,7 @@ class RecognizeCelebrity(APIPhase):
             for celebrity in response['CelebrityFaces']:
                 self.celebrities.append(Celebrity(
                     name=celebrity.get('Name', 'N.A.'),
-                    celebrity_id=celebrity.get('Id', 'N.A.'),
+                    recognition_id=celebrity.get('Id', 'N.A.'),
                     bounding_box=celebrity.get('Face', {}).get('BoundingBox', {}),
                     urls=celebrity.get('Urls', [])
                 ).__dict__)
@@ -90,7 +90,7 @@ class RecognizeCelebrity(APIPhase):
         else:
             self.celebrities.append(Celebrity(
                     name='Others',
-                    celebrity_id='N.A.',
+                    recognition_id='N.A.',
                     bounding_box={},
                     urls=[]
             ).__dict__)

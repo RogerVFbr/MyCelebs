@@ -53,14 +53,14 @@ PicturesTable:
   Properties:
     TableName: ${self:provider.environment.PICTURES_TABLE_NAME}
     AttributeDefinitions:
-      - AttributeName: id
+      - AttributeName: user_id
         AttributeType: S
-      - AttributeName: time
+      - AttributeName: picture_id
         AttributeType: S
     KeySchema:
-      - AttributeName: id
+      - AttributeName: user_id
         KeyType: HASH
-      - AttributeName: time
+      - AttributeName: picture_id
         KeyType: RANGE
     BillingMode: PAY_PER_REQUEST
 
@@ -69,11 +69,15 @@ CelebritiesTable:
   Properties:
     TableName: ${self:provider.environment.CELEBRITIES_TABLE_NAME}
     AttributeDefinitions:
-      - AttributeName: id
+      - AttributeName: user_id
+        AttributeType: S
+      - AttributeName: celebrity_id
         AttributeType: S
     KeySchema:
-      - AttributeName: id
+      - AttributeName: user_id
         KeyType: HASH
+      - AttributeName: celebrity_id
+        KeyType: RANGE
     BillingMode: PAY_PER_REQUEST
 
 

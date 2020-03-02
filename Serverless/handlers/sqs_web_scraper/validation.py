@@ -15,7 +15,7 @@ class Validation(APIPhase):
         """
 
         self.event = event                          # :dict: AWS Event object.
-        self.id = None                              # :str: Request user id.
+        self.user_id = None                         # :str: Request user id.
         self.celebrities = None                     # :list: List of celebrities to scrap.
 
         # Attempts to extract invocation Id from event object
@@ -45,7 +45,7 @@ class Validation(APIPhase):
         # Extracts information from newly acquired request object.
         try:
             new_entry = json.loads(self.event.get('Records', [{}])[0].get('body', {}))
-            self.id = new_entry['id']
+            self.user_id = new_entry['user_id']
             self.celebrities = new_entry['celebrities']
         except Exception as e:
             self.log(self.rsc.INEXISTENT_NEW_ENTRY.format(str(e)))
