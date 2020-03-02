@@ -29,7 +29,7 @@ def celeb_recognition(event, context):
     # pic_log['orientation_correction'] = rc.orientation_correction
     pic_log['orientation_correction'] = 'TEST_ROTATION'
     if 'api_metrics' not in pic_log: pic_log['api_metrics'] = {}
-    pic_log['api_metrics']['celebrity_recognition'] = vl.get_metrics_snapshot(vl.invocation_id)
+    pic_log['api_metrics']['celebrity_recognition'] = vl.get_metrics(vl.invocation_id)
 
     spl = SaveLog(
         repository=AWSDynamoDB(ap.env.PICTURES_TABLE_NAME),
