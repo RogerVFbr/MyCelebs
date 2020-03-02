@@ -139,12 +139,14 @@ class APIPhase(ABC):
             return invocation_id
 
     @classmethod
-    def log_successful_execution_msg(cls, invocation_id: str):
+    def finalize_function(cls, invocation_id: str):
         """
-        Prints latest acquired or generated invocation ID.
+        Runs standardized execution finishing procedures: prints acquired or generated invocation ID, stops metrics
+        measurements.
         :return: void.
         """
 
+        _ = ApiMetrics.get(invocation_id)
         print(cls.rsc.SUCCESSFUL_CLOUD_FUNCTION_EXECUTION.format(invocation_id))
 
     def log(self, msg):

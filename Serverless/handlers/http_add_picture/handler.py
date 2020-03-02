@@ -56,7 +56,7 @@ def add_picture(event, context):
     )
     if not sq.status: return
 
-    ap.log_successful_execution_msg(vl.invocation_id)
+    ap.finalize_function(vl.invocation_id)
 
     # Return success object
     return ap.get_return_object(

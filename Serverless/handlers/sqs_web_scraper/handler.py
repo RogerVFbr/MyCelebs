@@ -13,5 +13,5 @@ def web_scraper(event, context):
     vl = Validation(event)
     if not vl.status: return
 
-    ap.log_successful_execution_msg(vl.invocation_id)
+    ap.finalize_function(vl.invocation_id)
 

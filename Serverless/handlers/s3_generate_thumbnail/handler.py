@@ -29,6 +29,6 @@ def generate_thumbnail(event, context):
     si = SaveImage(ip.img_bytes, ip.img_ext, vl.invocation_id)
     if not si.status: return
 
-    ap.log_successful_execution_msg(vl.invocation_id)
+    ap.finalize_function(vl.invocation_id)
 
 

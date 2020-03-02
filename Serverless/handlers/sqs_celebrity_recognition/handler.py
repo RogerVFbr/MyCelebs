@@ -78,5 +78,5 @@ def celeb_recognition(event, context):
         )
         if not sq.status: return
 
-    ap.log_successful_execution_msg(vl.invocation_id)
+    ap.finalize_function(vl.invocation_id)
 
