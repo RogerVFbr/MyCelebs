@@ -1,4 +1,4 @@
-from handlers.sqs_celebrity_recognition.check_local_celebrity_data import CheckLocalCelebrityData
+from handlers.sqs_celebrity_recognition.check_celebrity_uniqueness import CheckCelebrityUniqueness
 from handlers.sqs_celebrity_recognition.validation import Validation
 from interfaces.save_log import SaveLog
 from interfaces.api_phase import APIPhase as ap
@@ -41,11 +41,11 @@ def celeb_recognition(event, context):
     if not spl.status: return
 
     # Check if local celebrity data exists
-    cd = CheckLocalCelebrityData(vl.new_entry['user_id'], pic_log['celebrities'], vl.invocation_id)
-    if not cd.status: return
+    ccu = CheckCelebrityUniqueness(vl.new_entry['user_id'], pic_log['celebrities'], vl.invocation_id)
+    if not ccu.status: return
 
     # Save new celebrities if applicable.
-    for celeb in cd.unique_celebs:
+    for celeb in ccu.unique_celebs:
         new_celeb_entry = {
             'user_id': vl.new_entry['user_id'],
             'celebrity_id': celeb['name'].lower().replace(' ', ''),
@@ -61,22 +61,23 @@ def celeb_recognition(event, context):
         if not scl.status: return
 
     # If new celebrities have been detected, trigger web scrapper.
-    if len(cd.unique_celebs) > 0:
+    # if len(cd.unique_celebs) > 0:
 
-        # Save to queue
-        data_to_be_queued = {
-            'user_id': pic_log['user_id'],
-            'celebrities': cd.unique_celebs,
-            'invocation_id': vl.invocation_id
-        }
-        sq = SaveLog(
-            repository=AWSSQS(ap.env.QUEUE_BASE_URL, ap.env.WEB_SCRAP_QUEUE_NAME),
-            data=data_to_be_queued,
-            prefix='SQ',
-            phase_name='Save to queue',
-            invocation_id=vl.invocation_id
-        )
-        if not sq.status: return
+    # Save to queue
+    data_to_be_queued = {
+        'user_id': pic_log['user_id'],
+        # 'celebrities': cd.unique_celebs,
+        'celebrities': pic_log['celebrities'],
+        'invocation_id': vl.invocation_id
+    }
+    sq = SaveLog(
+        repository=AWSSQS(ap.env.QUEUE_BASE_URL, ap.env.WEB_SCRAP_QUEUE_NAME),
+        data=data_to_be_queued,
+        prefix='SQ',
+        phase_name='Save to queue',
+        invocation_id=vl.invocation_id
+    )
+    if not sq.status: return
 
     ap.finalize_function(vl.invocation_id)
 

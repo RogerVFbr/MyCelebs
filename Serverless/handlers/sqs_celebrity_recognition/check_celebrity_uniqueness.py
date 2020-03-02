@@ -2,7 +2,7 @@ from interfaces.api_phase import APIPhase
 from services.aws_dynamodb import AWSDynamoDB
 
 
-class CheckLocalCelebrityData(APIPhase):
+class CheckCelebrityUniqueness(APIPhase):
     """
     Log saving object class, responsible for saving a given log in dictionary form to a persistent repository.
     """
@@ -20,8 +20,8 @@ class CheckLocalCelebrityData(APIPhase):
         self.unique_celebs = []                                             # :list: Stores new celebs.
 
         # Initializes APIPhase superclass parameters and procedures
-        super(CheckLocalCelebrityData, self).__init__(prefix='CD', phase_name='Check local celebrity data',
-                                                      invocation_id=invocation_id)
+        super(CheckCelebrityUniqueness, self).__init__(prefix='CD', phase_name='Check local celebrity data',
+                                                       invocation_id=invocation_id)
 
     def run(self):
         """
