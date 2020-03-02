@@ -13,9 +13,10 @@ class EnvironmentVariables:
     PUBLIC_IMG_BASE_ADDRESS = __env_var.get('PUBLIC_IMG_BASE_ADDRESS')
     PUBLIC_THUMBNAIL_BASE_ADDRESS = __env_var.get('PUBLIC_THUMBNAIL_BASE_ADDRESS')
     SMALL_THUMBNAIL_SUFFIX = __env_var.get('SMALL_THUMBNAIL_SUFFIX')
+    QUEUE_BASE_URL = __env_var.get('QUEUE_BASE_URL')
     ADD_PICTURE_QUEUE_NAME = __env_var.get('ADD_PICTURE_QUEUE_NAME')
     WEB_SCRAP_QUEUE_NAME = __env_var.get('WEB_SCRAP_QUEUE_NAME')
-    QUEUE_BASE_URL = __env_var.get('QUEUE_BASE_URL')
+    CREATE_CELEBRITY_QUEUE_NAME = __env_var.get('CREATE_CELEBRITY_QUEUE_NAME')
 
     @classmethod
     def get(cls, env_var):

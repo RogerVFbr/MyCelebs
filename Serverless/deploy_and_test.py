@@ -9,7 +9,7 @@ FUNCTIONS_TO_DEPLOY = [
     # 'add-picture',
     'celeb-recognition',
     # 'generate-thumbnail',
-    # 'web-scraper'
+    'web-scraper'
 ]
 
 UPDATE_REPOSITORY = True

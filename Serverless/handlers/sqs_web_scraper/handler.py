@@ -9,6 +9,8 @@ def web_scraper(event, context):
     print('| . . . . . . . . WEB SCRAPER . . . . . . .|')
     print('+------------------------------------------+')
 
+    print(str(event))
+
     # Execute validation phase
     vl = Validation(event)
     if not vl.status: return
