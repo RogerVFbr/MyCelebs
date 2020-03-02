@@ -1,7 +1,7 @@
 from handlers.sqs_celebrity_recognition.check_celebrity_uniqueness import CheckCelebrityUniqueness
 from handlers.sqs_celebrity_recognition.validation import Validation
 from interfaces.save_log import SaveLog
-from interfaces.api_phase import APIPhase as ap
+from interfaces.api_phase import CloudFunctionPhase as Cfp
 from services.aws_dynamodb import AWSDynamoDB
 from services.aws_sqs import AWSSQS
 
@@ -32,7 +32,7 @@ def celeb_recognition(event, context):
     pic_log['api_metrics']['celebrity_recognition'] = vl.get_metrics(vl.invocation_id)
 
     spl = SaveLog(
-        repository=AWSDynamoDB(ap.env.PICTURES_TABLE_NAME),
+        repository=AWSDynamoDB(Cfp.env.PICTURES_TABLE_NAME),
         data=pic_log,
         prefix='SP',
         phase_name='Save picture log',
@@ -52,7 +52,7 @@ def celeb_recognition(event, context):
             'recognition_data': celeb
         }
         scl = SaveLog(
-            repository=AWSDynamoDB(ap.env.CELEBRITIES_TABLE_NAME),
+            repository=AWSDynamoDB(Cfp.env.CELEBRITIES_TABLE_NAME),
             data=new_celeb_entry,
             prefix='SC',
             phase_name='Save celebrity log',
@@ -71,7 +71,7 @@ def celeb_recognition(event, context):
         'invocation_id': vl.invocation_id
     }
     sq = SaveLog(
-        repository=AWSSQS(ap.env.QUEUE_BASE_URL, ap.env.WEB_SCRAP_QUEUE_NAME),
+        repository=AWSSQS(Cfp.env.QUEUE_BASE_URL, Cfp.env.WEB_SCRAP_QUEUE_NAME),
         data=data_to_be_queued,
         prefix='SQ',
         phase_name='Save to queue',
@@ -79,5 +79,5 @@ def celeb_recognition(event, context):
     )
     if not sq.status: return
 
-    ap.finalize_function(vl.invocation_id)
+    Cfp.terminate_function(vl.invocation_id)
 

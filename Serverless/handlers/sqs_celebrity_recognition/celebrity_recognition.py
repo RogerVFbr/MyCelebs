@@ -1,9 +1,9 @@
-from interfaces.api_phase import APIPhase
+from interfaces.api_phase import CloudFunctionPhase
 from services.aws_rekognition import AWSRekognition
 from handlers.sqs_celebrity_recognition.models.celebrity import Celebrity
 
 
-class RecognizeCelebrity(APIPhase):
+class RecognizeCelebrity(CloudFunctionPhase):
     """
     Celebrity recognition object, responsible for accessing celebrity recognition API using a file storage stored
     image. Is also responsible for validating and processing the response.

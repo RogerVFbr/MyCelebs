@@ -1,9 +1,9 @@
 import base64
 
-from interfaces.api_phase import APIPhase
+from interfaces.api_phase import CloudFunctionPhase
 
 
-class Validation(APIPhase):
+class Validation(CloudFunctionPhase):
     """
     Validation object class, responsible for validating, decoding and exposing data retrieved from the client's
     sent request object (event dictionary).

@@ -1,8 +1,8 @@
-from interfaces.api_phase import APIPhase
+from interfaces.api_phase import CloudFunctionPhase
 from services.aws_s3_dao import AWSS3
 
 
-class SaveImage(APIPhase):
+class SaveImage(CloudFunctionPhase):
     """
     Image saving object, responsible for preparing the file storage structure, accessing the blob storage API,
     and evaluating the response.

@@ -1,7 +1,7 @@
-from interfaces.api_phase import APIPhase
+from interfaces.api_phase import CloudFunctionPhase
 
 
-class SaveLog(APIPhase):
+class SaveLog(CloudFunctionPhase):
     """
     Log saving object class, responsible for saving a given log in dictionary form to a persistent repository.
     """

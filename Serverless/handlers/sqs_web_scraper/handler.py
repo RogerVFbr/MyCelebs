@@ -1,5 +1,7 @@
-from interfaces.api_phase import APIPhase as ap
+from handlers.sqs_web_scraper.get_proxy import GetProxy
 from handlers.sqs_web_scraper.validation import Validation
+from interfaces.api_phase import CloudFunctionPhase as Cfp
+
 
 
 def web_scraper(event, context):
@@ -9,11 +11,12 @@ def web_scraper(event, context):
     print('| . . . . . . . . WEB SCRAPER . . . . . . .|')
     print('+------------------------------------------+')
 
-    print(str(event))
-
     # Execute validation phase
     vl = Validation(event)
     if not vl.status: return
 
-    ap.finalize_function(vl.invocation_id)
+    gp = GetProxy(vl.invocation_id)
+    if not gp.status: return
+
+    Cfp.terminate_function(vl.invocation_id)
 

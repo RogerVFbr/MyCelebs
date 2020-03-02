@@ -3,11 +3,11 @@ import io
 from PIL import Image
 
 from handlers.http_add_picture.models.img_meta_data import ImgMetaData
-from interfaces.api_phase import APIPhase
+from interfaces.api_phase import CloudFunctionPhase
 from handlers.http_add_picture.exif_utilities import ExifUtilities as eu
 
 
-class ImagePreProcessing(APIPhase):
+class ImagePreProcessing(CloudFunctionPhase):
     """
     Image pre-processing object, responsible for converting image to required Pillow Image format, performing
     any processing required, extracting and exposing resulting meta data.

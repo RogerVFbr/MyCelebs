@@ -1,8 +1,8 @@
 import json
-from interfaces.api_phase import APIPhase
+from interfaces.api_phase import CloudFunctionPhase
 
 
-class Validation(APIPhase):
+class Validation(CloudFunctionPhase):
     """
     Validation object class, responsible for validating and exposing data retrieved from a cloud queue
     service (event dictionary).

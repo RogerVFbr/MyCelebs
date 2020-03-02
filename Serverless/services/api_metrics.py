@@ -56,6 +56,7 @@ class ApiMetrics:
 
         # Iterates on measurement dictionary stopping time counters and flagging measurements as done.
         metrics = {}
+        if invocation_id not in cls.__counters: return metrics
         for k, v in cls.__counters[invocation_id].items():
             if v['counting']:
                 metrics[k] = cls.__get_time_diff(v['time'])

@@ -1,7 +1,7 @@
 {
   "Records": [
     {
-      "body": "{\"id\": \"dev@dev.com\", \"celebrities\": [{\"name\": \"TEST\", \"celebrity_id\": \"TEST\", \"bounding_box\": {}, \"urls\": []}], \"invocation_id\": \"test_id_1\"}"
+      "body": "{\"user_id\": \"dev@dev.com\", \"celebrities\": [{\"name\": \"TEST\", \"table_id\": \"test\", \"celebrity_id\": \"TEST\", \"bounding_box\": {}, \"urls\": []}], \"invocation_id\": \"test_id_1\"}"
     }
   ]
 }

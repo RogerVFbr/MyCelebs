@@ -4,20 +4,20 @@ from tests.test_procedure import TestProcedure
 from tests.test_logger import TestLogger as tl
 
 DEPLOY = True
-FULL = False
+FULL = True
 FUNCTIONS_TO_DEPLOY = [
     # 'add-picture',
-    'celeb-recognition',
+    # 'celeb-recognition',
     # 'generate-thumbnail',
     'web-scraper'
 ]
 
 UPDATE_REPOSITORY = True
 MAIN_BRANCH = True
-GIT_COMMIT_MESSAGE = 'Celebrty log saving started.'
+GIT_COMMIT_MESSAGE = 'Web scraping proxy finder started.'
 
 TEST_FUNCTIONS = True
-PRINT_LOGS_ON_SCREEN = False
+PRINT_LOGS_ON_SCREEN = True
 TESTS_TO_PERFORM = [
     'add-picture-integration',
     # 'web-scraper'

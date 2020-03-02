@@ -1,8 +1,8 @@
-from interfaces.api_phase import APIPhase
+from interfaces.api_phase import CloudFunctionPhase
 from services.aws_dynamodb import AWSDynamoDB
 
 
-class CheckCelebrityUniqueness(APIPhase):
+class CheckCelebrityUniqueness(CloudFunctionPhase):
     """
     Log saving object class, responsible for saving a given log in dictionary form to a persistent repository.
     """

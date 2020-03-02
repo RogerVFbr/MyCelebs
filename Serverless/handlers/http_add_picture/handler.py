@@ -1,7 +1,7 @@
 from handlers.http_add_picture.validation import Validation
 from handlers.http_add_picture.image_pre_processing import ImagePreProcessing
 from handlers.http_add_picture.save_image import SaveImage
-from interfaces.api_phase import APIPhase as ap
+from interfaces.api_phase import CloudFunctionPhase as Cfp
 from interfaces.save_log import SaveLog
 from services.aws_sqs import AWSSQS
 
@@ -48,7 +48,7 @@ def add_picture(event, context):
         }
     }
     sq = SaveLog(
-        repository=AWSSQS(ap.env.QUEUE_BASE_URL, ap.env.ADD_PICTURE_QUEUE_NAME),
+        repository=AWSSQS(Cfp.env.QUEUE_BASE_URL, Cfp.env.ADD_PICTURE_QUEUE_NAME),
         data=data_to_queue,
         prefix='SQ',
         phase_name='Save to queue',
@@ -56,10 +56,10 @@ def add_picture(event, context):
     )
     if not sq.status: return
 
-    ap.finalize_function(vl.invocation_id)
+    Cfp.terminate_function(vl.invocation_id)
 
     # Return success object
-    return ap.get_return_object(
+    return Cfp.get_return_object(
         status_code=200,
         response_code=0,
         msg_dev='Success',

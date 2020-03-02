@@ -1,7 +1,7 @@
-from interfaces.api_phase import APIPhase
+from interfaces.api_phase import CloudFunctionPhase
 
 
-class LoadImage(APIPhase):
+class LoadImage(CloudFunctionPhase):
     """
     Image loading object, responsible for preparing the file storage structure, accessing the blob storage API,
     and evaluating the response.

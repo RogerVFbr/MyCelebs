@@ -9,7 +9,7 @@ from resources.models.error import Error
 from resources.strings_en import Strings
 
 
-class APIPhase(ABC):
+class CloudFunctionPhase(ABC):
     """
     Superclass encapsulating behavioral properties and methods common to all API phases. Is responsible for carrying
     and exposing phase status, error objects and message strings. Also stores cloud function invocation ID and provides
@@ -139,7 +139,7 @@ class APIPhase(ABC):
             return invocation_id
 
     @classmethod
-    def finalize_function(cls, invocation_id: str):
+    def terminate_function(cls, invocation_id: str):
         """
         Runs standardized execution finishing procedures: prints acquired or generated invocation ID, stops metrics
         measurements.

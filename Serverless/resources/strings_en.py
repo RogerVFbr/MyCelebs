@@ -41,6 +41,14 @@ class Strings:
     UNEXPECTED_RESPONSE_STRUCTURE = 'ERROR: Unexpected response structure.'
     INEXISTENT_NEW_ENTRY = "ERROR: Can't read new entry, it might be empty or response structure might have changed: {}"
 
+    UNABLE_TO_CONNECT_TO_PROXIES_PROVIDER = "Unable to connect to proxies provider '{}': {}."
+    PROXIES_FOUND = "Found {} HTTPS ready proxies."
+    PROXY_ATTEMPTING_CONNECTION = "Attempting connection via: {}."
+    PROXY_ATTEMPTS_TIMED_OUT = "Connections attempts timed out without result."
+    PROXY_SELECTED = "Proxy selected: {}."
+    PROXY_UNABLE_TO_QUALIFY = "Unable to qualify proxy."
+    PROXY_SKIPPED = "Discarding '{}': {}."
+
     UNABLE_TO_DELETE_FROM_DATABASE = 'ERROR: Unable to delete from database: {}'
     DELETED_FROM_DATABASE = 'Data deleted from database. Id: {}'
 

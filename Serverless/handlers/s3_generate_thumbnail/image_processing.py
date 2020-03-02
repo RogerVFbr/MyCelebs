@@ -1,10 +1,10 @@
 from io import BytesIO
 from PIL import Image
 
-from interfaces.api_phase import APIPhase
+from interfaces.api_phase import CloudFunctionPhase
 
 
-class ImageProcessing(APIPhase):
+class ImageProcessing(CloudFunctionPhase):
     """
     Image processing object, responsible for converting image to required Pillow Image format and performing
     any processing required.
