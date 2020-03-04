@@ -1,7 +1,7 @@
 from io import BytesIO
 from PIL import Image
 
-from interfaces.api_phase import CloudFunctionPhase
+from interfaces.cloud_function_phase import CloudFunctionPhase
 
 
 class ImageProcessing(CloudFunctionPhase):

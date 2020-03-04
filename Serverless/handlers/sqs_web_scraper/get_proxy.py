@@ -1,10 +1,7 @@
-import threading
-import time
+import threading, time, random, requests
 
-from interfaces.api_phase import CloudFunctionPhase
+from interfaces.cloud_function_phase import CloudFunctionPhase
 from bs4 import BeautifulSoup as soup
-import random
-import requests
 
 
 class GetProxy(CloudFunctionPhase):
@@ -38,10 +35,13 @@ class GetProxy(CloudFunctionPhase):
 
     def __get_proxies(self):
 
+        ts = time.time()
+
         try:
             response = requests.get(self.FREE_PROXIES_SOURCE_URL)
         except Exception as e:
-            self.log(self.rsc.UNABLE_TO_CONNECT_TO_PROXIES_PROVIDER.format(self.FREE_PROXIES_SOURCE_URL, str(e)))
+            te = str(round(time.time() - ts, 3)) + 's'
+            self.log(self.rsc.UNABLE_TO_CONNECT_TO_PROXIES_PROVIDER.format(self.FREE_PROXIES_SOURCE_URL, te, str(e)))
             return False
 
         page_html = response.text
@@ -63,10 +63,12 @@ class GetProxy(CloudFunctionPhase):
         random.shuffle(proxies)
         self.proxies = proxies
 
-        self.log(self.rsc.PROXIES_FOUND.format(str(len(self.proxies))))
+        te = str(round(time.time() - ts, 3)) + 's'
+        self.log(self.rsc.PROXIES_FOUND.format(str(len(self.proxies)), te))
         return True
 
     def __find_proxy(self):
+        ts = time.time()
         for x in range(5):
             t = threading.Thread(target=self.__check_proxies)
             t.daemon = True
@@ -76,13 +78,14 @@ class GetProxy(CloudFunctionPhase):
         while self.proxies and not self.selected_proxy and (time.time()-ts) < self.CONNECTION_ATTEMPTS_TIME_OUT:
             time.sleep(0.2)
 
+        te = str(round(time.time() - ts, 3)) + 's'
         if(time.time()-ts) >= self.CONNECTION_ATTEMPTS_TIME_OUT:
-            self.log(self.rsc.PROXY_ATTEMPTS_TIMED_OUT)
+            self.log(self.rsc.PROXY_ATTEMPTS_TIMED_OUT.format(te))
             self.timeout_flag = True
         elif self.selected_proxy:
-            self.log(self.rsc.PROXY_SELECTED.format(str(self.selected_proxy)))
+            self.log(self.rsc.PROXY_SELECTED.format(str(self.selected_proxy), te))
         else:
-            self.log(self.rsc.PROXY_UNABLE_TO_QUALIFY)
+            self.log(self.rsc.PROXY_UNABLE_TO_QUALIFY.format(te))
 
     def __check_proxies(self):
         while True:

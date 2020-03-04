@@ -1,7 +1,7 @@
 from handlers.http_add_picture.validation import Validation
 from handlers.http_add_picture.image_pre_processing import ImagePreProcessing
 from handlers.http_add_picture.save_image import SaveImage
-from interfaces.api_phase import CloudFunctionPhase as Cfp
+from interfaces.cloud_function_phase import CloudFunctionPhase as Cfp
 from interfaces.save_log import SaveLog
 from services.aws_sqs import AWSSQS
 

@@ -1,6 +1,6 @@
 from handlers.sqs_web_scraper.get_proxy import GetProxy
 from handlers.sqs_web_scraper.validation import Validation
-from interfaces.api_phase import CloudFunctionPhase as Cfp
+from interfaces.cloud_function_phase import CloudFunctionPhase as Cfp
 
 
 

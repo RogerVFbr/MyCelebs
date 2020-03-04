@@ -2,7 +2,7 @@ from handlers.s3_generate_thumbnail.image_processing import ImageProcessing
 from handlers.s3_generate_thumbnail.load_image import LoadImage
 from handlers.s3_generate_thumbnail.save_image import SaveImage
 from handlers.s3_generate_thumbnail.validation import Validation
-from interfaces.api_phase import CloudFunctionPhase as Cfp
+from interfaces.cloud_function_phase import CloudFunctionPhase as Cfp
 from services.aws_s3_dao import AWSS3
 
 

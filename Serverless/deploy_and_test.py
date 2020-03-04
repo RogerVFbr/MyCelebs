@@ -4,7 +4,7 @@ from tests.test_procedure import TestProcedure
 from tests.test_logger import TestLogger as tl
 
 DEPLOY = True
-FULL = True
+FULL = False
 FUNCTIONS_TO_DEPLOY = [
     # 'add-picture',
     # 'celeb-recognition',
@@ -19,8 +19,8 @@ GIT_COMMIT_MESSAGE = 'Web scraping proxy finder started.'
 TEST_FUNCTIONS = True
 PRINT_LOGS_ON_SCREEN = True
 TESTS_TO_PERFORM = [
-    'add-picture-integration',
-    # 'web-scraper'
+    # 'add-picture-integration',
+    'web-scraper'
 ]
 
 

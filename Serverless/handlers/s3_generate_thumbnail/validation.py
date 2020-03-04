@@ -1,6 +1,6 @@
 import json
 
-from interfaces.api_phase import CloudFunctionPhase
+from interfaces.cloud_function_phase import CloudFunctionPhase
 
 
 class Validation(CloudFunctionPhase):

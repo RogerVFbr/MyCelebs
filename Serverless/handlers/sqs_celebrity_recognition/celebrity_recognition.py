@@ -1,4 +1,4 @@
-from interfaces.api_phase import CloudFunctionPhase
+from interfaces.cloud_function_phase import CloudFunctionPhase
 from services.aws_rekognition import AWSRekognition
 from handlers.sqs_celebrity_recognition.models.celebrity import Celebrity
 

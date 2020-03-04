@@ -1,6 +1,6 @@
 from io import BytesIO
 
-from interfaces.api_phase import CloudFunctionPhase
+from interfaces.cloud_function_phase import CloudFunctionPhase
 from services.aws_s3_dao import AWSS3
 
 

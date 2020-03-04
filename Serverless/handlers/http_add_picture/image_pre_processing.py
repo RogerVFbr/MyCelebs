@@ -3,7 +3,7 @@ import io
 from PIL import Image
 
 from handlers.http_add_picture.models.img_meta_data import ImgMetaData
-from interfaces.api_phase import CloudFunctionPhase
+from interfaces.cloud_function_phase import CloudFunctionPhase
 from handlers.http_add_picture.exif_utilities import ExifUtilities as eu
 
 

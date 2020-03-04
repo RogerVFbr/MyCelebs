@@ -1,7 +1,7 @@
 from handlers.sqs_celebrity_recognition.check_celebrity_uniqueness import CheckCelebrityUniqueness
 from handlers.sqs_celebrity_recognition.validation import Validation
 from interfaces.save_log import SaveLog
-from interfaces.api_phase import CloudFunctionPhase as Cfp
+from interfaces.cloud_function_phase import CloudFunctionPhase as Cfp
 from services.aws_dynamodb import AWSDynamoDB
 from services.aws_sqs import AWSSQS
 
