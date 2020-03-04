@@ -12,6 +12,7 @@ class GetProxy(CloudFunctionPhase):
     FREE_PROXIES_SOURCE_URL = 'https://free-proxy-list.net/'
     PROXY_TEST_URL = 'https://httpbin.org/ip'
     CONNECTION_ATTEMPTS_TIME_OUT = 15
+    PROXY_CHECKER_WORKERS = 5
 
     def __init__(self, invocation_id):
         """
@@ -71,7 +72,7 @@ class GetProxy(CloudFunctionPhase):
     def __find_proxy(self):
         ts = time.time()
         self.proxies_to_evaluate = self.proxies[:]
-        for x in range(5):
+        for x in range(self.PROXY_CHECKER_WORKERS):
             t = threading.Thread(target=self.__check_proxies)
             t.daemon = True
             t.start()
@@ -82,13 +83,12 @@ class GetProxy(CloudFunctionPhase):
             time.sleep(0.2)
 
         te = str(round(time.time() - ts, 3)) + 's'
-        self.log(self.rsc.PROXY_EVALUATED.format(str(len(self.proxies) - len(self.proxies_to_evaluate))))
         if(time.time()-ts) >= self.CONNECTION_ATTEMPTS_TIME_OUT:
             self.log(self.rsc.PROXY_ATTEMPTS_TIMED_OUT.format(te))
             self.timeout_flag = True
         elif self.selected_proxy:
             self.log(self.rsc.PROXY_SELECTED.format(str(self.selected_proxy), self.proxies.index(self.selected_proxy),
-                                                    te))
+                                                    str(len(self.proxies) - len(self.proxies_to_evaluate)), te))
         else:
             self.log(self.rsc.PROXY_UNABLE_TO_QUALIFY.format(te))
 
