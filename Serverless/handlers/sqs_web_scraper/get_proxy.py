@@ -87,7 +87,8 @@ class GetProxy(CloudFunctionPhase):
             self.log(self.rsc.PROXY_ATTEMPTS_TIMED_OUT.format(te))
             self.timeout_flag = True
         elif self.selected_proxy:
-            self.log(self.rsc.PROXY_SELECTED.format(str(self.selected_proxy), te))
+            self.log(self.rsc.PROXY_SELECTED.format(str(self.selected_proxy), self.proxies.index(self.selected_proxy),
+                                                    te))
         else:
             self.log(self.rsc.PROXY_UNABLE_TO_QUALIFY.format(te))
 
