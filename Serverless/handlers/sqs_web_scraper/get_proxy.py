@@ -19,6 +19,7 @@ class GetProxy(CloudFunctionPhase):
         """
 
         self.proxies = []
+        self.proxies_to_evaluate = []
         self.selected_proxy = None
         self.lock = threading.Lock()
         self.timeout_flag = False
@@ -69,16 +70,19 @@ class GetProxy(CloudFunctionPhase):
 
     def __find_proxy(self):
         ts = time.time()
+        self.proxies_to_evaluate = self.proxies[:]
         for x in range(5):
             t = threading.Thread(target=self.__check_proxies)
             t.daemon = True
             t.start()
 
-        ts = time.time()
-        while self.proxies and not self.selected_proxy and (time.time()-ts) < self.CONNECTION_ATTEMPTS_TIME_OUT:
+        while self.proxies_to_evaluate \
+                and not self.selected_proxy \
+                and (time.time() - ts) < self.CONNECTION_ATTEMPTS_TIME_OUT:
             time.sleep(0.2)
 
         te = str(round(time.time() - ts, 3)) + 's'
+        self.log(self.rsc.PROXY_EVALUATED.format(str(len(self.proxies) - len(self.proxies_to_evaluate))))
         if(time.time()-ts) >= self.CONNECTION_ATTEMPTS_TIME_OUT:
             self.log(self.rsc.PROXY_ATTEMPTS_TIMED_OUT.format(te))
             self.timeout_flag = True
@@ -90,8 +94,8 @@ class GetProxy(CloudFunctionPhase):
     def __check_proxies(self):
         while True:
             self.lock.acquire()
-            if len(self.proxies) == 0 or self.timeout_flag: break
-            proxy = self.proxies.pop(0)
+            if len(self.proxies_to_evaluate) == 0 or self.timeout_flag: break
+            proxy = self.proxies_to_evaluate.pop(0)
             self.log(self.rsc.PROXY_ATTEMPTING_CONNECTION.format(str(proxy)))
             self.lock.release()
             if self.selected_proxy: break
