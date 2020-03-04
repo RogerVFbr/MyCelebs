@@ -42,7 +42,7 @@ class Strings:
     INEXISTENT_NEW_ENTRY = "ERROR: Can't read new entry, it might be empty or response structure might have changed: {}"
 
     UNABLE_TO_CONNECT_TO_PROXIES_PROVIDER = "Unable to connect to proxies provider '{}'. Elapsed: {}. -> {}."
-    PROXIES_FOUND = "Found {} HTTPS ready proxies. Elapsed: {}."
+    PROXIES_FOUND = "Found {} HTTPS ready proxies @ '{}'. Elapsed: {}."
     PROXY_ATTEMPTING_CONNECTION = "Attempting connection via: {}."
     PROXY_ATTEMPTS_TIMED_OUT = "Connections attempts timed out without result. Elapsed: {}"
     PROXY_EVALUATED = "Evaluated {} proxies."

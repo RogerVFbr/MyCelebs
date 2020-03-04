@@ -65,7 +65,7 @@ class GetProxy(CloudFunctionPhase):
         self.proxies = proxies
 
         te = str(round(time.time() - ts, 3)) + 's'
-        self.log(self.rsc.PROXIES_FOUND.format(str(len(self.proxies)), te))
+        self.log(self.rsc.PROXIES_FOUND.format(str(len(self.proxies)), self.FREE_PROXIES_SOURCE_URL, te))
         return True
 
     def __find_proxy(self):
