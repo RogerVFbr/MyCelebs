@@ -46,7 +46,7 @@ class Strings:
     PROXY_ATTEMPTING_CONNECTION = "Attempting connection via: {}."
     PROXY_ATTEMPTS_TIMED_OUT = "Connections attempts timed out without result. Elapsed: {}"
     PROXY_EVALUATED = "Evaluated {} proxies."
-    PROXY_SELECTED = "Proxy selected: {}. Attempt: {}. Elapsed: {}"
+    PROXY_SELECTED = "Proxy selected: '{}'. Attempt: {}. Elapsed: {}"
     PROXY_UNABLE_TO_QUALIFY = "Unable to qualify proxy. Elapsed: {}"
     PROXY_SKIPPED = "Discarding '{}': {}."
 

@@ -39,7 +39,7 @@ class GetProxy(CloudFunctionPhase):
         ts = time.time()
 
         try:
-            response = requests.get(self.FREE_PROXIES_SOURCE_URL)
+            response = requests.get(self.FREE_PROXIES_SOURCE_URL, timeout=5)
         except Exception as e:
             te = str(round(time.time() - ts, 3)) + 's'
             self.log(self.rsc.UNABLE_TO_CONNECT_TO_PROXIES_PROVIDER.format(self.FREE_PROXIES_SOURCE_URL, te, str(e)))
