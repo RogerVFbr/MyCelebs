@@ -11,7 +11,7 @@ class GetProxy(CloudFunctionPhase):
 
     FREE_PROXIES_SOURCE_URL = 'https://free-proxy-list.net/'
     PROXY_TEST_URL = 'https://httpbin.org/ip'
-    CONNECTION_ATTEMPTS_TIME_OUT = 10
+    CONNECTION_ATTEMPTS_TIME_OUT = 15
 
     def __init__(self, invocation_id):
         """
