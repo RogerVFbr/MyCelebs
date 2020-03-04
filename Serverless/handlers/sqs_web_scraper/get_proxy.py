@@ -97,7 +97,7 @@ class GetProxy(CloudFunctionPhase):
             self.lock.acquire()
             if len(self.proxies_to_evaluate) == 0 or self.timeout_flag: break
             proxy = self.proxies_to_evaluate.pop(0)
-            self.log(self.rsc.PROXY_ATTEMPTING_CONNECTION.format(str(proxy)))
+            # self.log(self.rsc.PROXY_ATTEMPTING_CONNECTION.format(str(proxy)))
             self.lock.release()
             if self.selected_proxy: break
             try:
@@ -111,7 +111,7 @@ class GetProxy(CloudFunctionPhase):
                 self.lock.acquire()
                 if self.timeout_flag: break
                 if not self.selected_proxy:
-                    self.log(self.rsc.PROXY_SKIPPED.format(str(proxy), str(e)))
+                    # self.log(self.rsc.PROXY_SKIPPED.format(str(proxy), str(e)))
                 self.lock.release()
 
 
