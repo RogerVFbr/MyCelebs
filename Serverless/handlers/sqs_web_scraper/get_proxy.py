@@ -110,7 +110,7 @@ class GetProxy(CloudFunctionPhase):
             except Exception as e:
                 self.lock.acquire()
                 if self.timeout_flag: break
-                if not self.selected_proxy:
+                # if not self.selected_proxy:
                     # self.log(self.rsc.PROXY_SKIPPED.format(str(proxy), str(e)))
                 self.lock.release()
 
