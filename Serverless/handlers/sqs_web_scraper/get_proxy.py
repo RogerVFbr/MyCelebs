@@ -60,7 +60,7 @@ class GetProxy(CloudFunctionPhase):
         """
         Scraps a given proxy addresses website, given by URL and scraping function.
         :param url: URL of the proxy finder.
-        :param scraper: scraping function adapted the particular website.
+        :param scraper: scraping function adapted to the particular website.
         :return: void.
         """
 
