@@ -26,11 +26,11 @@ class GetProxy(CloudFunctionPhase):
         self.selected_proxy = None
         self.lock = threading.Lock()
         self.abort_workers_flag = False
-        self.proxy_finders = [
+        self.proxy_lists = [
             ('https://free-proxy-list.net/', self.__scrap_free_proxy_list),
-            ('http://nntime.com/', self.__scrap_nntime)
+            ('http://nntime.com/', self.__scrap_nn_time)
         ]
-        self.unreachable_proxy_finder_count = 0
+        self.unreachable_proxy_list_count = 0
         self.ts_procedure = time.time()
         self.ts_proxy_check = None
 
@@ -40,16 +40,9 @@ class GetProxy(CloudFunctionPhase):
     def run(self) -> bool:
 
         self.__launch_checkers()
-        self.__launch_finders()
+        self.__launch_scrapers()
         self.__evaluate()
-
         return True
-
-    def __launch_finders(self):
-        for p in self.proxy_finders:
-            t = threading.Thread(target=self.__scrap_finder, args=(p[0], p[1]))
-            t.daemon = True
-            t.start()
 
     def __launch_checkers(self):
         for x in range(self.PROXY_CHECKER_WORKERS):
@@ -57,7 +50,13 @@ class GetProxy(CloudFunctionPhase):
             t.daemon = True
             t.start()
 
-    def __scrap_finder(self, url, scraper):
+    def __launch_scrapers(self):
+        for p in self.proxy_lists:
+            t = threading.Thread(target=self.__scrap_list, args=(p[0], p[1]))
+            t.daemon = True
+            t.start()
+
+    def __scrap_list(self, url, scraper):
         """
         Scraps a given proxy addresses website, given by URL and scraping function.
         :param url: URL of the proxy finder.
@@ -74,7 +73,7 @@ class GetProxy(CloudFunctionPhase):
             self.lock.acquire()
             self.log(self.rsc.UNABLE_TO_CONNECT_TO_PROXIES_PROVIDER.format(url, te_request,
                                                                            str(e)))
-            self.unreachable_proxy_finder_count += 1
+            self.unreachable_proxy_list_count += 1
             self.lock.release()
             return
 
@@ -107,7 +106,7 @@ class GetProxy(CloudFunctionPhase):
         self.lock.release()
 
     @staticmethod
-    def __scrap_nntime(page_soup):
+    def __scrap_nn_time(page_soup):
 
         decoder_raw = page_soup.find_all("script", {"type": "text/javascript"})
         decoder = decoder_raw[1].text.strip().split(';')
@@ -142,7 +141,7 @@ class GetProxy(CloudFunctionPhase):
         te_procedure = time.time() - self.ts_procedure
         while not self.selected_proxy \
                 and te_procedure <= self.PROCEDURE_TIMEOUT \
-                and self.unreachable_proxy_finder_count < len(self.proxy_finders):
+                and self.unreachable_proxy_list_count < len(self.proxy_lists):
             time.sleep(0.2)
             te_procedure = time.time() - self.ts_procedure
 
@@ -159,7 +158,7 @@ class GetProxy(CloudFunctionPhase):
                                                     te_proxy_check))
         elif te_procedure > self.PROCEDURE_TIMEOUT:
             self.log(self.rsc.PROXY_ATTEMPTS_TIMED_OUT.format(te_proxy_check))
-        elif self.unreachable_proxy_finder_count < len(self.proxy_finders):
+        elif self.unreachable_proxy_list_count < len(self.proxy_lists):
             self.log(self.rsc.PROXY_PROVIDERS_UNREACHABLE.format(te_proxy_check))
         else:
             self.log(self.rsc.PROXY_UNABLE_TO_QUALIFY.format(te_proxy_check))
@@ -181,9 +180,9 @@ class GetProxy(CloudFunctionPhase):
             self.lock.release()
             try:
                 _ = requests.get(self.PROXY_TEST_URL, proxies={"http": proxy, "https": proxy}, timeout=5)
-                if self.selected_proxy or self.abort_workers_flag: return
                 self.lock.acquire()
                 # print('Success: ' + proxy)
+                if self.selected_proxy or self.abort_workers_flag: return
                 self.selected_proxy = proxy
                 self.lock.release()
             except ConnectTimeout:
@@ -199,7 +198,7 @@ class GetProxy(CloudFunctionPhase):
             except Exception as e:
                 self.lock.acquire()
                 if not self.selected_proxy:
-                    self.log('Failed: ' + proxy + ' -> ' + str(e))
+                    self.log(f"'{proxy}' general exception: {str(e)}")
                 self.lock.release()
 
     @staticmethod
