@@ -8,12 +8,13 @@ from bs4 import BeautifulSoup as soup
 
 class GetProxy(CloudFunctionPhase):
     """
-    Proxy gathering object class, responsible for locating and selecting a viable proxy for web scraping operations.
+    Proxy gathering object class, responsible for locating and selecting viable proxies for web scraping operations.
     """
 
     PROXY_TEST_URL = 'https://httpbin.org/ip'
     PROCEDURE_TIMEOUT = 15
     PROXY_CHECKER_WORKERS = 20
+    NO_PROXIES_TO_GET = 1
 
     def __init__(self, invocation_id):
         """
@@ -23,12 +24,17 @@ class GetProxy(CloudFunctionPhase):
         self.proxies = []
         self.proxies_to_evaluate = []
         self.attempt = []
-        self.selected_proxy = None
+        self.selected_proxies = []
         self.lock = threading.Lock()
         self.abort_workers_flag = False
         self.proxy_lists = [
-            ('https://free-proxy-list.net/', self.__scrap_free_proxy_list),
-            ('http://nntime.com/', self.__scrap_nn_time)
+            # ('https://free-proxy-list.net/', self.__scrap_free_proxy_list),
+            ('https://www.us-proxy.org/', self.__scrap_free_proxy_list),
+            ('https://free-proxy-list.net/uk-proxy.html', self.__scrap_free_proxy_list),
+            # ('https://free-proxy-list.net/anonymous-proxy.html', self.__scrap_free_proxy_list),
+            # ('http://nntime.com/', self.__scrap_nn_time),
+            # ('https://proxygather.com', self.__scrap_proxy_gather),
+            ('https://proxygather.com/proxylist/country/?c=United%20States', self.__scrap_proxy_gather)
         ]
         self.unreachable_proxy_list_count = 0
         self.ts_procedure = time.time()
@@ -80,7 +86,7 @@ class GetProxy(CloudFunctionPhase):
         te_request = str(round(time.time() - ts_request, 3)) + 's'
         ts_parsing = time.time()
 
-        if self.selected_proxy or self.abort_workers_flag: return
+        if len(self.selected_proxies) >= self.NO_PROXIES_TO_GET or self.abort_workers_flag: return
         page_html = response.text
         page_soup = soup(page_html, "html.parser")
         proxy_count = 0
@@ -89,7 +95,7 @@ class GetProxy(CloudFunctionPhase):
             proxies = scraper(page_soup)
             for proxy in proxies:
                 self.lock.acquire()
-                if self.selected_proxy or self.abort_workers_flag: return
+                if len(self.selected_proxies) >= self.NO_PROXIES_TO_GET or self.abort_workers_flag: return
                 if self.__address_validator(proxy) and proxy not in self.proxies:
                     self.proxies.append(proxy)
                     self.proxies_to_evaluate.append(proxy)
@@ -101,9 +107,22 @@ class GetProxy(CloudFunctionPhase):
         te_parsing = str(round(time.time() - ts_parsing, 3)) + 's'
 
         self.lock.acquire()
-        if not self.selected_proxy:
+        if len(self.selected_proxies) < self.NO_PROXIES_TO_GET:
             self.log(self.rsc.PROXIES_FOUND.format(str(proxy_count), url, te_request, te_parsing))
         self.lock.release()
+
+    @staticmethod
+    def __scrap_proxy_gather(page_soup):
+        table = page_soup.find("table", {"id": "tblproxy"})
+        scripts = table.find_all("script")
+        for i, x in enumerate(scripts):
+            data = x.text.strip().replace('gp.insertPrx(', '').replace(')', '').replace('null', '"null"')\
+                .replace(';', '')
+            data = eval(data)
+            ip = data['PROXY_IP']
+            port = int(data['PROXY_PORT'], 16)
+            address = f"https://{ip}:{port}"
+            yield address
 
     @staticmethod
     def __scrap_nn_time(page_soup):
@@ -139,7 +158,7 @@ class GetProxy(CloudFunctionPhase):
     def __evaluate(self):
 
         te_procedure = time.time() - self.ts_procedure
-        while not self.selected_proxy \
+        while len(self.selected_proxies) < self.NO_PROXIES_TO_GET \
                 and te_procedure <= self.PROCEDURE_TIMEOUT \
                 and self.unreachable_proxy_list_count < len(self.proxy_lists):
             time.sleep(0.2)
@@ -152,12 +171,12 @@ class GetProxy(CloudFunctionPhase):
         else:
             te_proxy_check = 'N.A.'
 
-        if self.selected_proxy:
-            self.log(self.rsc.PROXY_SELECTED.format(str(self.selected_proxy), self.attempt.index(self.selected_proxy)+1,
+        if len(self.selected_proxies) >= self.NO_PROXIES_TO_GET:
+            self.log(self.rsc.PROXY_SELECTED.format(len(self.selected_proxies),
                                                     str(len(self.proxies) - len(self.proxies_to_evaluate)),
                                                     te_proxy_check))
         elif te_procedure > self.PROCEDURE_TIMEOUT:
-            self.log(self.rsc.PROXY_ATTEMPTS_TIMED_OUT.format(te_proxy_check))
+            self.log(self.rsc.PROXY_ATTEMPTS_TIMED_OUT.format(len(self.selected_proxies), te_proxy_check))
         elif self.unreachable_proxy_list_count < len(self.proxy_lists):
             self.log(self.rsc.PROXY_PROVIDERS_UNREACHABLE.format(te_proxy_check))
         else:
@@ -165,7 +184,7 @@ class GetProxy(CloudFunctionPhase):
 
     def __checker_worker(self):
         while True:
-            if self.selected_proxy or self.abort_workers_flag: return
+            if len(self.selected_proxies) >= self.NO_PROXIES_TO_GET or self.abort_workers_flag: return
             self.lock.acquire()
             if len(self.proxies_to_evaluate) == 0:
                 self.lock.release()
@@ -176,28 +195,27 @@ class GetProxy(CloudFunctionPhase):
             random_index = random.randint(0, len(self.proxies_to_evaluate)-1)
             proxy = self.proxies_to_evaluate.pop(random_index)
             self.attempt.append(proxy)
-            # print('Attempting: ' + proxy)
             self.lock.release()
             try:
                 _ = requests.get(self.PROXY_TEST_URL, proxies={"http": proxy, "https": proxy}, timeout=5)
                 self.lock.acquire()
-                # print('Success: ' + proxy)
-                if self.selected_proxy or self.abort_workers_flag: return
-                self.selected_proxy = proxy
+                if len(self.selected_proxies) >= self.NO_PROXIES_TO_GET or self.abort_workers_flag: return
+                self.log(f"Acquired '{proxy}'.")
+                self.selected_proxies.append(proxy)
                 self.lock.release()
             except ConnectTimeout:
                 self.lock.acquire()
-                if not self.selected_proxy:
+                if len(self.selected_proxies) < self.NO_PROXIES_TO_GET:
                     self.log(f"'{proxy}' timed out.")
                 self.lock.release()
             except ProxyError:
                 self.lock.acquire()
-                if not self.selected_proxy:
+                if len(self.selected_proxies) < self.NO_PROXIES_TO_GET:
                     self.log(f"'{proxy}' not contactable.")
                 self.lock.release()
             except Exception as e:
                 self.lock.acquire()
-                if not self.selected_proxy:
+                if len(self.selected_proxies) < self.NO_PROXIES_TO_GET:
                     self.log(f"'{proxy}' general exception: {str(e)}")
                 self.lock.release()
 

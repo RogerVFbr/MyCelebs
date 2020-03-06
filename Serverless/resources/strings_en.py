@@ -44,8 +44,8 @@ class Strings:
     UNABLE_TO_CONNECT_TO_PROXIES_PROVIDER = "Unable to connect to proxies provider '{}'. Elapsed: {}. -> {}."
     UNABLE_TO_SCRAP = "Unable to scrap proxy finder '{}'. Structure might have changed. -> {}"
     PROXIES_FOUND = "Scraped {} proxies @ '{}'. REQ: {} | PARS: {}"
-    PROXY_ATTEMPTS_TIMED_OUT = "Connections attempts timed out without result. Elapsed: {}"
-    PROXY_SELECTED = "Proxy selected: '{}'. Attempt: {}/{}. Elapsed: {}"
+    PROXY_ATTEMPTS_TIMED_OUT = "Connections attempts timed out. Acquired proxies: {}. Elapsed: {}"
+    PROXY_SELECTED = "Proxies acquired: {}. Attempts: {}. Elapsed: {}"
     PROXY_UNABLE_TO_QUALIFY = "Unable to qualify proxy. Elapsed: {}"
     PROXY_PROVIDERS_UNREACHABLE = "Unable to reach proxy providers. Elapsed: {}"
 
