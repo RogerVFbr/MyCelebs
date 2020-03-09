@@ -3,7 +3,6 @@ from handlers.sqs_web_scraper.validation import Validation
 from interfaces.cloud_function_phase import CloudFunctionPhase as Cfp
 
 
-
 def web_scraper(event, context):
 
     print('.')

@@ -1,7 +1,8 @@
 {
   "Records": [
     {
-      "body": "{\"user_id\": \"dev@dev.com\", \"celebrities\": [{\"name\": \"TEST\", \"table_id\": \"test\", \"celebrity_id\": \"TEST\", \"bounding_box\": {}, \"urls\": []}], \"invocation_id\": \"test_id_1\"}"
+      "body": "{\"user_id\": \"dev@dev.com\", \"celebrity\": {\"name\": \"Barack Obama\", \"table_id\": \"barack-obama\", \"recognition_id\": \"3R3sg9u\", \"bounding_box\": {\"Width\": \"0.3589743673801422\", \"Height\": \"0.4803418815135956\", \"Left\": \"0.33589744567871094\", \"Top\": \"0.1794871836900711\"}, \"urls\": [\"www.imdb.com/name/nm1682433\"]}, \"invocation_id\": \"test_id_1\"}"
     }
   ]
 }
+

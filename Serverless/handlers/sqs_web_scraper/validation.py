@@ -16,7 +16,9 @@ class Validation(CloudFunctionPhase):
 
         self.event = event                          # :dict: AWS Event object.
         self.user_id = None                         # :str: Request user id.
-        self.celebrities = None                     # :list: List of celebrities to scrap.
+        self.table_id = None
+        self.urls = []
+        self.celebrity = None                       # :str: Celebrity to scrap.
 
         # Attempts to extract invocation Id from event object
         invocation_id = json.loads(self.event.get('Records', [{}])[0].get('body', {})).get('invocation_id')
@@ -46,7 +48,9 @@ class Validation(CloudFunctionPhase):
         try:
             new_entry = json.loads(self.event.get('Records', [{}])[0].get('body', {}))
             self.user_id = new_entry['user_id']
-            self.celebrities = new_entry['celebrities']
+            self.celebrity = new_entry['celebrity']
+            self.table_id = self.celebrity['table_id']
+            self.urls = self.celebrity['urls']
         except Exception as e:
             self.log(self.rsc.INEXISTENT_NEW_ENTRY.format(str(e)))
             return False
