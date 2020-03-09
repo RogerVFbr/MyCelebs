@@ -42,12 +42,14 @@ class Strings:
     INEXISTENT_NEW_ENTRY = "ERROR: Can't read new entry, it might be empty or response structure might have changed: {}"
 
     UNABLE_TO_CONNECT_TO_PROXIES_PROVIDER = "Unable to connect to proxies provider '{}'. Elapsed: {}. -> {}."
+    UNABLE_TO_CONNECT_TO_AGENTS_PROVIDER = "Unable to connect to agents provider '{}'. Elapsed: {}. -> {}."
     UNABLE_TO_SCRAP = "Unable to scrap proxy finder '{}'. Structure might have changed. -> {}"
     PROXIES_FOUND = "Scraped {} proxies @ '{}'. REQ: {} | PARS: {}"
+    AGENTS_FOUND = "Scraped {} agents @ '{}'. REQ: {} | PARS: {}"
     PROXY_ATTEMPTS_TIMED_OUT = "Connections attempts timed out. Acquired proxies: {}. Elapsed: {}"
     PROXY_SELECTED = "Proxies acquired: {}. Attempts: {}. Elapsed: {}"
     PROXY_UNABLE_TO_QUALIFY = "Unable to qualify proxy. Elapsed: {}"
-    PROXY_PROVIDERS_UNREACHABLE = "Unable to reach proxy providers. Elapsed: {}"
+    NOTHING_MORE_TO_EVALUATE = "Acquired data has been evaluated without result. Elapsed: {}"
 
     UNABLE_TO_DELETE_FROM_DATABASE = 'ERROR: Unable to delete from database: {}'
     DELETED_FROM_DATABASE = 'Data deleted from database. Id: {}'
